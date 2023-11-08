@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace RpgMap
         public static long Now()
         {
             DateTimeOffset now = DateTimeOffset.Now;
-            long millSeconds = now.ToUnixTimeMilliseconds();
+            long millSeconds = now.ToUnixTimeSeconds();
             return millSeconds;
         }
 
@@ -20,7 +21,7 @@ namespace RpgMap
         public static long Now2()
         {
             DateTimeOffset now = DateTimeOffset.Now;
-            long Seconds = now.ToUnixTimeSeconds();
+            long Seconds = now.ToUnixTimeMilliseconds();
             return Seconds;
         }
 
@@ -44,11 +45,42 @@ namespace RpgMap
         public static (double, double) CalcMovingPos(double X, double Y, double X2, double Y2, int speed, int millSec)
         {
             double distance = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
-            int totalTime = (int)distance / speed * 1000;
+            int totalTime = (int)distance / speed * 1000;   // 按ms计算
             double X3 = X + (X2 - X) * (millSec / totalTime);
             double Y3 = Y + (Y2 - Y) * (millSec / totalTime);
             return (X3, Y3);
         }
-    }
 
+        // 判断两个坐标点的距离是否小于distance
+        // 也可判断x,y是否在中心点为x2,y2半径为Distance的圆内
+        public static bool CheckDistance(double X, double Y, double X2, double Y2, double Distance)
+        {
+            double dis = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
+            return dis <= Distance;
+        }
+
+        // 判断x,y是否处于中心点为x2,y2半径为r 朝向为Dir角度为an的扇形范围内
+        // dir为一个朝向，为扇形的中心线
+        public static bool InSector(double X, double Y, double X2, double Y2, double dir, double an, double r)
+        {
+            double dis = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
+            double angle = Math.Atan2(Y - Y2, X - X2);
+            angle = angle * 180 / Math.PI; // 弧度转角度
+            angle = angle < 0 ? angle + 360 : angle;
+
+            // 扇形的起始和结束角度
+            double sAngle = dir - an / 2;
+            sAngle = sAngle >= 0 ? sAngle : sAngle + 360;
+            double eAngle = dir + an / 2;
+            eAngle = eAngle < 360 ? eAngle : eAngle - 360;
+
+            bool InAngle;
+            if (eAngle >= sAngle)
+                InAngle = angle >= sAngle && angle <= eAngle;
+            else
+                InAngle = angle >= sAngle || angle <= eAngle;   // 起始和结束角度横跨了0°
+
+            return InAngle && dis <= r;
+        }
+    }
 }

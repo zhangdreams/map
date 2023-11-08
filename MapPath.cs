@@ -28,7 +28,7 @@ namespace RpgMap
 
     class AStar
     {
-        public static List<Node> FindPath(Node start, Node goal)
+        public static List<Node>? FindPath(int MapID, Node start, Node goal)
         {
             List<Node> openSet = new();
             List<Node> closedSet = new();
@@ -54,7 +54,7 @@ namespace RpgMap
                     return ReconstructPath(current);
                 }
 
-                foreach (Node neighbor in GetNeighbors(current))
+                foreach (Node neighbor in GetNeighbors(MapID, current))
                 {
                     if (closedSet.Contains(neighbor))
                     {
@@ -90,7 +90,7 @@ namespace RpgMap
             return path;
         }
 
-        private static List<Node> GetNeighbors(Node node)
+        private static List<Node> GetNeighbors(int MapID, Node node)
         {
             List<Node> neighbors = new ();
 
@@ -103,7 +103,7 @@ namespace RpgMap
                 int newY = node.Y + dy[i];
 
                 // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
-                if (IsValidCoordinate(newX, newY) && !IsObstacle(newX, newY))
+                if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY))
                 {
                     neighbors.Add(new Node(newX, newY));
                 }
@@ -117,23 +117,25 @@ namespace RpgMap
             return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
         }
 
-        private static bool IsValidCoordinate(int x, int y)
+        private static bool IsValidCoordinate(int MapID, int x, int y)
         {
-            int mapWidth = 100; // todo 先随便给个大小
-            int mapHeight = 100;
+            var config = MapReader.GetConfig(MapID);
+            if (config == null)
+                return false;
+            int mapWidth = config.Width; 
+            int mapHeight = config.Height;
 
             return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
         }
 
-        private static bool IsObstacle(int x, int y)
+        private static bool IsObstacle(int MapID, int x, int y)
         {
-            //// 假设地图数据存储在二维数组中，其中障碍物用特定的值表示
-            //int[,] mapData = /* 获取地图数据 */;
+            var config = MapReader.GetConfig(MapID);
+            if (config == null)
+                return true;
 
-            //// 检查坐标是否包含障碍物值
-            //return mapData[x, y] == /* 障碍物值 */;
-
-            return false;
+            var pos = new ConfigPos(x, y);
+            return config.UnWalkList.Contains(pos);
         }
 
     }

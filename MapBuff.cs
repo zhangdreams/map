@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
-    internal class MapBuff
+    public class MapBuff
     {
         public int BuffID {  get; set; }
         public long EndTime {  get; set; }

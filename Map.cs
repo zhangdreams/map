@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -24,6 +25,8 @@ namespace RpgMap
         public int RoleNum { get; set; } = 0; // 地图内玩家数量
 
         public Dictionary<long, MapRole> Roles = new(); // 保存玩家实例
+
+        public Dictionary<(int,long), MapRole> ActorMap = new();
         public List<long> BuffRoleIDList { get; set; } = new List<long>(); // 保存地图内有buff的玩家ID
 
         public Map(int id, int mapID, string mapName) 
@@ -39,10 +42,11 @@ namespace RpgMap
             thread.Start();
             this.thread = thread;
 
+            var config = MapReader.GetConfig(mapID);
             // 初始化AOI
-            MapAoi Aoi = new(100, 100);     // todo 先随便给个大小
-            this.Aoi = Aoi;
+            this.Aoi = new(config.Width, config.Height);
         }
+
         public void InitMap()
         {
             LastTickTime = Time.Now2();
@@ -65,40 +69,51 @@ namespace RpgMap
             }
         }
 
-        // 这里不用暴露接口
-        //public static Map NewMap(int id, int mapID, string mapName)
-        //{
-        //    Map map = new(id, mapID, mapName);
-        //    return map;
-
-        //}
-
         // 玩家进入地图
         public void DoRoleEnter(MapRole MapRole)
         {
-            // todo 先随便给个位置
-            MapRole.PosX = 10;
-            MapRole.PosY = 10;
+
+            var config = MapReader.GetConfig(MapID);
+            Random r = new Random();
+            int PosX = r.Next(Math.Max(config.BornX-3, 0), Math.Min(config.BornX+3, config.Width));
+            int PosY = r.Next(Math.Max(config.BornY-3, 0), Math.Min(config.BornY+3, config.Height));
+            MapRole.PosX = PosX;
+            MapRole.PosY = PosY;
             Roles[MapRole.ID] = MapRole;
-            // todo
             RoleNum++;
+            // todo
         }
 
         public void DoRoleExit(long RoleID)
         {
-            // todo
             BuffRoleIDList.Remove(RoleID);
             Roles.Remove(RoleID);
             RoleNum--;
+            // todo
         }
-        
-        public void DoRoleDead(long RoleID)
+
+
+
+        public long DoAddHP(long RoleID, long Add)
         {
+            long NewHp = 0;
             if (Roles.ContainsKey(RoleID))
             {
-               MapRole role = Roles[RoleID];
-                role.State = 0;
+                MapRole role = Roles[RoleID];
+                NewHp = role.AddHp(Add);
             }
+            return NewHp;
+        }
+
+        public long DoDecHP(long RoleID, long Dec)
+        {
+            long NewHp = 0;
+            if(Roles.ContainsKey(RoleID))
+            {
+                MapRole role = Roles[RoleID];
+                NewHp = role.DecHp(Dec);
+            }
+            return NewHp;
         }
 
         // 轮询检查移动
@@ -107,28 +122,16 @@ namespace RpgMap
             int upTime = (int)((int)Now2 - LastTickTime);
             foreach (var Dic in Roles)
             {
-                MapRole role = (MapRole)Dic.Value;
+                MapRole role = Dic.Value;
                 if (role.IsMoving)
                 {
                     double X = role.PosX;
                     double Y = role.PosY;
-                    (double NewX, double NewY) = MapTool.CalcMovingPos(X, Y, role.TargetX, role.TargetY, role.Speed, upTime);
-                    role.PosX = NewX;
-                    role.PosY = NewY;
+                    (double NewX, double NewY) = role.Moving(upTime);
                     Aoi.DoMove(1, role.ID, X, Y, NewX, NewY);
                 }
             }
         }
 
-        // 玩家停下(主动或者被动)
-        public void StopMoving(long RoleID)
-        {
-            if (!Roles.ContainsKey(RoleID))
-                return;
-            MapRole role = Roles[RoleID];
-            role.IsMoving = false;
-            role.TargetX = 0;
-            role.TargetY = 0;
-        }
     }
 }

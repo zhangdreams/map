@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
-    internal class MapProp
+    public class Prop
     {
-        public long HP {  get; set; }
-        public long MaxHp { get; set; }
-        public int Attack { get; set; }
-        public int Defense {  get; set; }
-        public int Speed { get; set; }
-        public MapProp() {}
+        public long HP { get; set; } = 0;
+        public long MaxHp { get; set; } = 0;
+        public int Attack { get; set; } = 0;
+        public int Defense {  get; set; } = 0;
+        public int Speed { get; set; } = 0;
+        public Prop() 
+        {
+
+        }
 
     }
 }

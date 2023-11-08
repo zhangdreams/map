@@ -6,10 +6,22 @@ namespace RpgMap
     {
         public static void Main()
         {
-            Console.WriteLine("start map mgr");
+            MapReader.Read();
+            SkillReader.Read();
 
-            //MapMgr mgr = new ();
-            //var M = mgr.mapDic["10"];
+            Console.WriteLine("start map mgr");
+            _ = new MapMgr();
+            var IDList = MapReader.GetMapIDs();
+            foreach (var MapId in IDList)
+            {
+                string mapName = MapTool.GetMapName(MapId);
+                Console.WriteLine($"start create map:{MapId},{mapName}");
+                MapMgr.CreateMap(MapId, mapName);
+            }
+
+            MapMgr.ShowDict();
+
+            //Console.ReadLine();
 
         }
 

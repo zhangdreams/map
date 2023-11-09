@@ -197,6 +197,14 @@ namespace RpgMap
                 foreach(var TarActor in HurtMap.Values)
                 {
                     List<MapEffect> Effects = MapFight.DoFight(this, SrcActor, TarActor, config);
+                    if(config.TBuffs.Count > 0)
+                    {
+                        // 可能会对目标添加buff
+                        foreach (var TarEffect in EffectMaps)
+                        {
+                            //todo
+                        }
+                    }
                     EffectMaps.AddRange(Effects);
                 }
                 Skill.CurWave++;

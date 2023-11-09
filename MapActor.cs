@@ -115,6 +115,13 @@ namespace RpgMap
 
                 MapSkill SkillEntity = new(Type, ID, TargetMap, SkillID, pos);
                 Map.AddSkillEntity(SkillEntity);
+                if(config.SBuffs.Count > 0)
+                {
+                    foreach(var Buff in config.SBuffs)
+                    {
+                        // todo 可能会给自己添加buff
+                    }
+                }
             }
             catch (Exception e)
             {

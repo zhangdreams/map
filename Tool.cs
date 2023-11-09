@@ -58,6 +58,10 @@ namespace RpgMap
             double dis = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
             return dis <= Distance;
         }
+        public static bool CheckDistance(MapPos Pos1, MapPos Pos2, double Distance) 
+        {
+            return CheckDistance(Pos1.x, Pos1.y, Pos2.x, Pos2.y, Distance);
+        }
 
         // 判断x,y是否处于中心点为x2,y2半径为r 朝向为Dir角度为an的扇形范围内
         // dir为一个朝向，为扇形的中心线
@@ -81,6 +85,10 @@ namespace RpgMap
                 InAngle = angle >= sAngle || angle <= eAngle;   // 起始和结束角度横跨了0°
 
             return InAngle && dis <= r;
+        }
+        public static bool InSector(MapPos Pos1, MapPos Pos2, double an, double r)
+        {
+            return InSector(Pos1.x, Pos1.y, Pos2.x, Pos2.y, Pos2.dir, an, r);
         }
     }
 }

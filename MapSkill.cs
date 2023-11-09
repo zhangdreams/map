@@ -28,22 +28,22 @@ namespace RpgMap
     {
         public static long SkillEnID = 1;
         public long ID { get; set; }    // 实例ID
-        public long RoleID { get; set; } // 技能释放者
-        public long TargetID { get; set; } = 0; // 技能目标ID(非指向性技能通常为0)
+        public int ActorType { get; set; }
+        public long ActorID { get; set; } // 技能释放者
+        public List<(int,long)> TargetMap { get; set; } // 技能目标ID(非指向性技能通常为空)
         public int SkillId { get; set; } // 技能配置ID
         public MapPos Pos { get; set; } = new(0, 0, 0); // 目标位置
         public int CurWave { get; set; } // 当前技能段数
-        public List<int> intervals = new(); // 技能段数之间的间隔
         public long SkillTime { get; set; } // 上一段技能触发时间
-        public MapSkill(long roleID, long targetID, int skillId, MapPos pos)
+        public SkillConfig SkillConfig { get; set; } // 技能配置
+        public MapSkill(int actorType, long actorID, List<(int,long)> TargetMap, int skillId, MapPos pos)
         {
             ID = GetEnID();
-            RoleID = roleID;
-            TargetID = targetID;
+            ActorID = actorID;
+            this.TargetMap = TargetMap;
             SkillId = skillId;
             Pos = pos;
             CurWave = 0;
-            //this.intervals = ;
             SkillTime = 0;
         }
 
@@ -52,6 +52,28 @@ namespace RpgMap
             return SkillEnID++;
         }
 
-        // todo  根据养成对技能配置影响判断下要不要缓存一下技能配置？
+        
+    }
+
+    // 地图内的技能信息
+    internal class ActorSkill
+    {
+        public int SkillID { get; set; } // 技能配置ID
+        public int Pos { get; set; } // 技能位
+        public long UseTime { get; set; } // 上次技能释放时间
+
+        public ActorSkill(int SkillID, int Pos)
+        {
+            this.SkillID = SkillID;
+            this.Pos = Pos;
+            UseTime = 0;
+        }
+        public ActorSkill(int skillId, int pos, long useTime)
+        {
+            SkillID = skillId;
+            this.Pos = pos;
+            UseTime = useTime;
+        }
+
     }
 }

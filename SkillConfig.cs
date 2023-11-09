@@ -30,10 +30,10 @@ namespace RpgMap
         public List<int> Ranges { get; set; } = new(); 
         public int TargetNum { get; set; } // 最大目标数量
         public string SelfBuffs { get; set; }
-        public List<int> SBuffs { get; set; } = new(); // 技能结束后给自己加的buff（是否结束后可根据需求改变）
+        public List<int> SBuffs { get; set; } = new(); // 给自己加的buff（通常是技能释放的时候）
         public string TargetBuffs { get; set; }
 
-        public List<int> TBuffs { get;set; } = new(); // 技能结束后给目标加的buff（是否结束后可根据需求改变）
+        public List<int> TBuffs { get;set; } = new(); // 给目标加的buff（通常是波次结束）
     }
 
     internal class SkillReader
@@ -45,9 +45,11 @@ namespace RpgMap
             return SkillConfigs.Keys.ToList();
         }
 
-        public static SkillConfig GetConfig(int skillID)
+        public static SkillConfig? GetConfig(int skillID)
         {
-            return SkillConfigs[skillID];
+            if(SkillConfigs.ContainsKey(skillID))
+                return SkillConfigs[skillID];
+            return null;
         }
 
         public static void Read()
@@ -78,19 +80,22 @@ namespace RpgMap
         public static void ShowConfig(int SkillID)
         {
             var config = GetConfig(SkillID);
-            Console.WriteLine($"skillID:{config.SkillID}");
-            Console.WriteLine($"Name:{config.Name}");
-            Console.WriteLine($"AttackParam:{config.AttackParam}");
-            Console.WriteLine($"AttackDistance:{config.AttackDistance}");
-            Console.WriteLine($"CD:{config.CD}");
-            Console.WriteLine($"Type:{config.Type}");
-            Console.WriteLine($"TotalWave:{config.TotalWave}");
-            Console.WriteLine($"DamageType:{config.DamageType}");
-            Console.WriteLine($"Waves:{string.Join(",", config.Waves)}");
-            Console.WriteLine($"Ranges:{string.Join(",", config.Ranges)}");
-            Console.WriteLine($"SBuffs:{string.Join(",", config.SBuffs)}");
-            Console.WriteLine($"TBuffs:{string.Join(",", config.TBuffs)}");
-            Console.WriteLine();
+            if(config != null)
+            {
+                Console.WriteLine($"skillID:{config.SkillID}");
+                Console.WriteLine($"Name:{config.Name}");
+                Console.WriteLine($"AttackParam:{config.AttackParam}");
+                Console.WriteLine($"AttackDistance:{config.AttackDistance}");
+                Console.WriteLine($"CD:{config.CD}");
+                Console.WriteLine($"Type:{config.Type}");
+                Console.WriteLine($"TotalWave:{config.TotalWave}");
+                Console.WriteLine($"DamageType:{config.DamageType}");
+                Console.WriteLine($"Waves:{string.Join(",", config.Waves)}");
+                Console.WriteLine($"Ranges:{string.Join(",", config.Ranges)}");
+                Console.WriteLine($"SBuffs:{string.Join(",", config.SBuffs)}");
+                Console.WriteLine($"TBuffs:{string.Join(",", config.TBuffs)}");
+                Console.WriteLine();
+            }
         }
     }
 }

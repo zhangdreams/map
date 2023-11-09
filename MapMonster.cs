@@ -1,8 +1,12 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RpgMap
 {
-    internal class MapRole
+    internal class MapMonster
     {
         public long ID { get; set; } = 0;    // 唯一ID
         public string Name { get; set; } = ""; // 角色名
@@ -19,28 +23,18 @@ namespace RpgMap
         public double TargetX { get; set; } = 0;  // 移动的目标坐标点
         public double TargetY { get; set; } = 0;
 
-        //public string Buffs;
-        public MapRole(long ID, string Name, int Speed, int Camp)
+        public MapMonster(long ID, string Name, int Speed, int Camp)
         {
             this.ID = ID;
             this.Name = Name;
             this.Speed = Speed;
             this.Camp = Camp;
-            // List<Node> path = AStar.FindPath(startNode, goalNode);
             // todo
         }
 
         public MapPos GetPos()
         {
             return new MapPos(PosX, PosY, Dir);
-        }
-
-        // 玩家停下(主动或者被动)
-        public void StopMoving()
-        {
-            this.IsMoving = false;
-            this.TargetX = 0;
-            this.TargetY = 0;
         }
 
         // 加血
@@ -56,7 +50,7 @@ namespace RpgMap
         // 扣血
         public long DecHp(long Dec)
         {
-            if(State > 0)
+            if (State > 0)
             {
                 HP = Math.Max(HP - Dec, 0);
             }
@@ -70,23 +64,14 @@ namespace RpgMap
         {
             State = 1;
             HP = MaxHp;
-           // 可能改变位置
+            // 可能改变位置
         }
 
         // 死亡事件
         public void onDead()
         {
-           State = 0;
-           // todo
-        }
-
-        // 位置更新
-        public (double, double) Moving(int upTime)
-        {
-            (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
-            PosX = NewX; 
-            PosY = NewY;
-            return (NewX, NewY);
+            State = 0;
+            // todo
         }
     }
 }

@@ -43,7 +43,9 @@ namespace RpgMap
 
         public static MapConfig? GetConfig(int mapID)
         {
-            return mapConfigs[mapID];
+            if (mapConfigs.ContainsKey(mapID))
+                return mapConfigs[mapID];
+            return null;
         }
         public static void Read()
         {
@@ -83,17 +85,18 @@ namespace RpgMap
         public static void ShowConfig(int MapID)
         {
             var c = GetConfig(MapID);
-            Console.WriteLine($"ID: {c.MapID}");
-            Console.WriteLine($"Name: {c.Name}");
-            Console.WriteLine($"Width: {c.Width}");
-            Console.WriteLine($"Height: {c.Height}");
-            Console.WriteLine($"BornX: {c.BornX}");
-            Console.WriteLine($"BornY: {c.BornY}");
-            Console.WriteLine($"UnwalkList:{c.UnWalkList.Count}");
-            Console.WriteLine($"unwalk pos:");
-            foreach (var v in c.UnWalkList)
+            if (c != null)
             {
-                Console.Write($"{v.x},{v.y};");
+                Console.WriteLine($"ID: {c.MapID}");
+                Console.WriteLine($"Name: {c.Name}");
+                Console.WriteLine($"Width: {c.Width}");
+                Console.WriteLine($"Height: {c.Height}");
+                Console.WriteLine($"BornX: {c.BornX}");
+                Console.WriteLine($"BornY: {c.BornY}");
+                Console.WriteLine($"UnwalkList:{c.UnWalkList.Count}");
+                Console.WriteLine($"unwalk pos:");
+                foreach (var v in c.UnWalkList)
+                    Console.Write($"{v.x},{v.y};");
             }
         }
     }

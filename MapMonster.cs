@@ -32,9 +32,38 @@ namespace RpgMap
             // todo
         }
 
+        public bool GetMoveState()
+        {
+            return IsMoving;
+        }
+
+        public void SetMoveState(bool State)
+        {
+            this.IsMoving = State;
+        }
+        
+        public void SetTargetPos(double PosX, double PosY)
+        {
+            this.PosX = PosX;
+            this.PosY = PosY;
+        }
+
+        public void SetPath(List<Node> Path)
+        {
+            this.Path = Path;
+        }
+
         public MapPos GetPos()
         {
             return new MapPos(PosX, PosY, Dir);
+        }
+
+        public void StopMove()
+        {
+            this.IsMoving = false;
+            this.TargetX = 0;
+            this.TargetY = 0;
+            this.Path.Clear();
         }
 
         // 加血
@@ -72,6 +101,15 @@ namespace RpgMap
         {
             State = 0;
             // todo
+        }
+
+        // 位置更新
+        public (double, double) Moving(int upTime)
+        {
+            (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
+            PosX = NewX;
+            PosY = NewY;
+            return (NewX, NewY);
         }
     }
 }

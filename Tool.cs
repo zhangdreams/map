@@ -13,16 +13,16 @@ namespace RpgMap
         public static long Now()
         {
             DateTimeOffset now = DateTimeOffset.Now;
-            long millSeconds = now.ToUnixTimeSeconds();
-            return millSeconds;
+            long Seconds = now.ToUnixTimeSeconds();
+            return Seconds;
         }
 
         // 返回当前时间戳 (毫秒）
         public static long Now2()
         {
             DateTimeOffset now = DateTimeOffset.Now;
-            long Seconds = now.ToUnixTimeMilliseconds();
-            return Seconds;
+            long millSeconds = now.ToUnixTimeMilliseconds();
+            return millSeconds;
         }
 
     }

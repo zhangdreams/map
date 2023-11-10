@@ -30,13 +30,29 @@ namespace RpgMap
             // todo
         }
 
+        public bool GetMoveState()
+        {
+            return IsMoving;
+        }
+
+        public void SetMoveState(bool State)
+        {
+            this.IsMoving = State;
+        }
+
+        public void SetTargetPos(double PosX, double PosY)
+        {
+            this.PosX = PosX;
+            this.PosY = PosY;
+        }
+
         public MapPos GetPos()
         {
             return new MapPos(PosX, PosY, Dir);
         }
 
         // 玩家停下(主动或者被动)
-        public void StopMoving()
+        public void StopMove()
         {
             this.IsMoving = false;
             this.TargetX = 0;

@@ -28,7 +28,7 @@ namespace RpgMap
         public Dictionary<long, MapMonster> Monsters { get; set; } = new(); 
         public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
         public List<long> BuffRoleIDList { get; set; } = new List<long>(); // 保存地图内有buff的玩家ID
-        public List<MapSkill> SkillList { get; set; }   // 保存地图内的技能实例
+        public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
 
         public Map(int id, int mapID, string mapName) 
         {
@@ -135,15 +135,14 @@ namespace RpgMap
         public void LoopMoving2(long Now2)
         {
             int upTime = (int)((int)Now2 - LastTickTime);
-            foreach (var Dic in Roles)
+            foreach (var Dic in ActorMap)
             {
-                MapRole role = Dic.Value;
-                if (role.IsMoving)
+                MapActor Actor = Dic.Value;
+                if (Actor.MoveState())
                 {
-                    double X = role.PosX;
-                    double Y = role.PosY;
-                    (double NewX, double NewY) = role.Moving(upTime);
-                    Aoi.DoMove(1, role.ID, X, Y, NewX, NewY);
+                    MapPos Pos = Actor.GetPos();
+                    (double NewX, double NewY) = Actor.DoMoving(upTime);
+                    Aoi.DoMove(Actor.Type, Actor.ID, Pos.x, Pos.y, NewX, NewY);
                 }
             }
         }
@@ -152,7 +151,6 @@ namespace RpgMap
         {
             SkillList.Add(Skill);
             // 视野同步
-
         }
 
         // 技能轮询

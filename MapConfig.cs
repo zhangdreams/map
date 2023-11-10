@@ -27,6 +27,7 @@ namespace RpgMap
         public int Height { get; set; }
         public int BornX { get; set; }
         public int BornY { get; set; }
+        public int MaxNum { get; set; }
         public string UnWalk { get; set; }
         public List<ConfigPos> UnWalkList { get; set; }
     }
@@ -93,6 +94,7 @@ namespace RpgMap
                 Console.WriteLine($"Height: {c.Height}");
                 Console.WriteLine($"BornX: {c.BornX}");
                 Console.WriteLine($"BornY: {c.BornY}");
+                Console.WriteLine($"MaxNum: {c.MaxNum}");
                 Console.WriteLine($"UnwalkList:{c.UnWalkList.Count}");
                 Console.WriteLine($"unwalk pos:");
                 foreach (var v in c.UnWalkList)

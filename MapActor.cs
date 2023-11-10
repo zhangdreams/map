@@ -14,7 +14,7 @@ namespace RpgMap
         public Prop Prop { get; set; } = new(); // 属性
         public Dictionary<int, MapBuff> Buffs { get; set; } = new();
         public Dictionary<int, ActorSkill> Skills { get; set; } = new();
-        public Map Map { get; set; }
+        public Map Map;
 
         public MapActor(int Type, long ID) 
         { 
@@ -34,6 +34,130 @@ namespace RpgMap
                     return monster.GetPos();
                 default:
                     return new MapPos(0,0);
+            }
+        }
+
+        public bool MoveState()
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    return role.GetMoveState();
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    return monster.GetMoveState();
+                default:
+                    return false;
+            }
+        }
+        public void SetMoveState(bool State)
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    role.SetMoveState(State);
+                    break;
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    monster.SetMoveState(State);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void SetTargetPos(double x, double y)
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    role.SetTargetPos(x, y);
+                    break;
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    monster.SetTargetPos(x, y);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void SetPath(List<Node> Path)
+        {
+            switch (Type)
+            {
+                // 玩家不需要设置寻路路点
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    monster.SetPath(Path);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public (double, double) DoMoving(int upTime)
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    return role.Moving(upTime);
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    return monster.Moving(upTime);
+                default:
+                    return (0,0);
+            }
+        }
+
+        public void DoStartMove(double x, double y)
+        {
+            try
+            {
+                if(MapPath.IsObstacle(Map.MapID, (int)x, (int)y))
+                {
+                    throw new Exception($"pos can't move x={x},y={y}");
+                }
+                if(!MapPath.IsValidCoordinate(Map.MapID, (int)x, (int)y))
+                {
+                    throw new Exception($"pos is unvalid x={x},y={y}");
+                }
+                MapPos Pos = GetPos();
+                Node Start = new((int)Pos.x, (int)Pos.y);
+                Node Goal = new Node((int)x, (int)y);
+                var Path = MapPath.FindPath(Map.MapID, Start, Goal);
+                if (Path == null)
+                {
+                    throw new Exception($"can move to pos x={x},y={y}");
+                }
+                SetMoveState(true);
+                SetTargetPos(x, y);
+                SetPath(Path);
+                // todo 判断能否移动
+            }catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        public void DoStopMove()
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    role.StopMove();
+                    break;
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    monster.StopMove();
+                    break;
+                default:
+                    break;
             }
         }
 

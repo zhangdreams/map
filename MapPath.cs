@@ -24,14 +24,27 @@ namespace RpgMap
             H = 0;
             Parent = null;
         }
+
+        public bool Arrival(Node other)
+        {
+            return other.X == X && other.Y == Y;
+        }
     }
 
-    class AStar
+    class MapPath
     {
-        public static List<Node>? FindPath(int MapID, Node start, Node goal)
+        public static List<Node> FindPath(int MapID, Node start, Node goal)
         {
+            if(!ContainsObstacleBetween(MapID, start, goal))    // 中间没有障碍物，直接可达
+            {
+                List<Node> ret = new();
+                ret.Add(goal);
+                return ret;
+            }
+                
             List<Node> openSet = new();
             List<Node> closedSet = new();
+            Dictionary<(int,int), int> neighborMaps = new(); // 增加步长
 
             openSet.Add(start);
 
@@ -49,25 +62,33 @@ namespace RpgMap
                 openSet.Remove(current);
                 closedSet.Add(current);
 
-                if (current == goal)
+                if (current.Arrival(goal))
                 {
                     return ReconstructPath(current);
                 }
 
-                foreach (Node neighbor in GetNeighbors(MapID, current))
+                int step = 1;
+                if(!neighborMaps.ContainsKey((current.X,current.Y)))
+                {
+                    neighborMaps[(current.X, current.Y)] = 1;
+                }else
+                {
+                    step = neighborMaps[(current.X, current.Y)];
+                    neighborMaps[(current.X, current.Y)] = step + 1;
+                }
+                foreach (Node neighbor in GetNeighbors(MapID, current, step))
                 {
                     if (closedSet.Contains(neighbor))
                     {
                         continue;
                     }
 
-                    int tentativeG = current.G + CalculateDistance(current, neighbor);
-
+                    int tentativeG = current.G + CalculateDistance(MapID, current, neighbor);
                     if (!openSet.Contains(neighbor) || tentativeG < neighbor.G)
                     {
                         neighbor.Parent = current;
                         neighbor.G = tentativeG;
-                        neighbor.H = CalculateDistance(neighbor, goal);
+                        neighbor.H = CalculateDistance(MapID, neighbor, goal);
                         if (!openSet.Contains(neighbor))
                         {
                             openSet.Add(neighbor);
@@ -76,7 +97,7 @@ namespace RpgMap
                 }
             }
 
-            return null; // No path found
+            return new List<Node>(); // No path found
         }
 
         private static List<Node> ReconstructPath(Node node)
@@ -90,34 +111,83 @@ namespace RpgMap
             return path;
         }
 
-        private static List<Node> GetNeighbors(int MapID, Node node)
+        private static List<Node> GetNeighbors(int MapID, Node node, int step)
         {
             List<Node> neighbors = new ();
 
-            int[] dx = { -1, 1, 0, 0 }; // 横向移动
-            int[] dy = { 0, 0, -1, 1 }; // 纵向移动
+            int[] dx = { -step, step, 0, 0 }; // 横向移动
+            int[] dy = { 0, 0, -step, step }; // 纵向移动
 
             for (int i = 0; i < 4; i++)
             {
                 int newX = node.X + dx[i];
                 int newY = node.Y + dy[i];
 
+                Node newNode = new Node(newX, newY);
                 // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
-                if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY))
+                if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY) && !ContainsObstacleBetween(MapID, node, newNode))
                 {
-                    neighbors.Add(new Node(newX, newY));
+                    neighbors.Add(newNode);
                 }
-            }
 
+            }
             return neighbors;
         }
 
-        private static int CalculateDistance(Node a, Node b)
+        private static int CalculateDistance(int MapID, Node a, Node b)
         {
-            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+            int dx = a.X - b.X;
+            int dy = a.Y - b.Y;
+
+            int distance = (int)(Math.Sqrt(dx * dx + dy * dy) * 10);
+            if(ContainsObstacleBetween(MapID, a, b))
+            {
+                distance *= 5;
+            }
+
+            return distance;
         }
 
-        private static bool IsValidCoordinate(int MapID, int x, int y)
+        private static bool ContainsObstacleBetween(int MapID, Node start, Node end)
+        {
+            // 检查两个节点之间的直线路径是否包含障碍物
+            int dx = Math.Abs(end.X - start.X);
+            int dy = Math.Abs(end.Y - start.Y);
+
+            int x = start.X;
+            int y = start.Y;
+
+            int xIncrement = (start.X < end.X) ? 1 : -1;
+            int yIncrement = (start.Y < end.Y) ? 1 : -1;
+
+            int error = dx - dy;
+
+            while (x != end.X || y != end.Y)
+            {
+                if (IsObstacle(MapID, x, y))
+                {
+                    return true; // 发现障碍物
+                }
+
+                int doubleError = error * 2;
+
+                if (doubleError > -dy)
+                {
+                    error -= dy;
+                    x += xIncrement;
+                }
+
+                if (doubleError < dx)
+                {
+                    error += dx;
+                    y += yIncrement;
+                }
+            }
+
+            return false; // 没有发现障碍物
+        }
+
+        public static bool IsValidCoordinate(int MapID, int x, int y)
         {
             var config = MapReader.GetConfig(MapID);
             if (config == null)
@@ -128,7 +198,7 @@ namespace RpgMap
             return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
         }
 
-        private static bool IsObstacle(int MapID, int x, int y)
+        public static bool IsObstacle(int MapID, int x, int y)
         {
             var config = MapReader.GetConfig(MapID);
             if (config == null)

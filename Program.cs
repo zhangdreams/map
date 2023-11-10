@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace RpgMap
 {
@@ -10,17 +11,30 @@ namespace RpgMap
             SkillReader.Read();
 
             Console.WriteLine("start map mgr");
-            _ = new MapMgr();
-            var IDList = MapReader.GetMapIDs();
-            foreach (var MapId in IDList)
+            //_ = new MapMgr();
+            //var IDList = MapReader.GetMapIDs();
+            //foreach (var MapId in IDList)
+            //{
+            //    string mapName = MapTool.GetMapName(MapId);
+            //    Console.WriteLine($"start create map:{MapId},{mapName}");
+            //    MapMgr.CreateMap(MapId, mapName);
+            //}
+
+            //MapMgr.ShowDict();
+
+            
+            Node Start = new(45, 19);
+            Node Goal = new(47, 19);
+            Console.WriteLine($"start find path");
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            var Nodes = MapPath.FindPath(1, Start, Goal);
+            stopwatch.Stop();
+            Console.WriteLine($"map find path Nodes, {stopwatch.ElapsedMilliseconds}");
+            foreach(var n in Nodes)
             {
-                string mapName = MapTool.GetMapName(MapId);
-                Console.WriteLine($"start create map:{MapId},{mapName}");
-                MapMgr.CreateMap(MapId, mapName);
+                Console.Write($" ({n.X},{n.Y},{n.F})");
             }
-
-            MapMgr.ShowDict();
-
+            Console.WriteLine();
             //Console.ReadLine();
 
         }

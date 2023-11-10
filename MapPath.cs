@@ -35,13 +35,13 @@ namespace RpgMap
     {
         public static List<Node> FindPath(int MapID, Node start, Node goal)
         {
-            if(!ContainsObstacleBetween(MapID, start, goal))    // 中间没有障碍物，直接可达
+            if (!ContainsObstacleBetween(MapID, start, goal))    // 中间没有障碍物，直接可达
             {
                 List<Node> ret = new();
                 ret.Add(goal);
                 return ret;
             }
-                
+
             List<Node> openSet = new();
             List<Node> closedSet = new();
             Dictionary<(int,int), int> neighborMaps = new(); // 增加步长
@@ -111,7 +111,7 @@ namespace RpgMap
             return path;
         }
 
-        private static List<Node> GetNeighbors(int MapID, Node node, int step)
+        public static List<Node> GetNeighbors(int MapID, Node node, int step)
         {
             List<Node> neighbors = new ();
 
@@ -131,7 +131,38 @@ namespace RpgMap
                 }
 
             }
+            // 效率较低
+            //List<(int, int)> list = new();
+            //for (int i = node.X-step; i <= node.X+step; i++)
+            //{
+            //    AddPoint((i, node.Y-step), ref list);
+            //    AddPoint((i, node.Y+step), ref list);
+
+            //}
+            //for (int j = node.Y - step; j <= node.Y + step; j++)
+            //{
+            //    AddPoint((node.X - step, j), ref list);
+            //    AddPoint((node.X + step, j), ref list);
+            //}
+            //foreach ((int newX, int newY) in list)
+            //{
+            //    //int newX = node.X + dx[i];
+            //    //int newY = node.Y + dy[i];
+
+            //    Node newNode = new Node(newX, newY);
+            //    // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
+            //    if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY) && !ContainsObstacleBetween(MapID, node, newNode))
+            //    {
+            //        neighbors.Add(newNode);
+            //    }
+            //}
             return neighbors;
+        }
+
+        public static void AddPoint((int, int) P, ref List<(int, int)> list)
+        {
+            if(!list.Contains(P))
+                list.Add(P);
         }
 
         private static int CalculateDistance(int MapID, Node a, Node b)

@@ -111,5 +111,17 @@ namespace RpgMap
             PosY = NewY;
             return (NewX, NewY);
         }
+
+        // 移动到下一个路径点
+        public void MoveNext()
+        {
+            if(Path.Count > 0)
+            {
+                Node next = Path[0];
+                TargetX = next.X;
+                TargetY = next.Y;
+                Path.RemoveAt(0);
+            }
+        }
     }
 }

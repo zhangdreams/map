@@ -23,6 +23,7 @@ namespace RpgMap
             return ActorInMap(Map, (Type, ID));
         }
 
+        // 返回受击目标
         public static Dictionary<(int, long), MapActor> FilterHurt(Map Map, MapSkill Skill, MapActor SrcActor)
         {
             Dictionary<(int, long), MapActor> HurtMap = new();
@@ -31,27 +32,27 @@ namespace RpgMap
             switch (config.Type)
             {
                 case 1:
-                    HurtMap = FilterHurt2(Map, Skill, SrcPos, config.AttackDistance);
+                    HurtMap = FilterHurt2(Map, Skill, SrcPos, config.AttackDistance, Skill.TargetMap);
                     break;
-                case 2:
+                case 0:
                     MapPos TarPos = Skill.Pos;
                     var List = Map.Aoi.GetAoi(TarPos.x, TarPos.y);
                     foreach (var t in List)
                     {
-                        (int ttype, _) = t;
-                        if (ttype != 1 && ttype != 2)
+                        (int ttype, long tID) = t;
+                        if ((ttype != 1 && ttype != 2) || tID == SrcActor.ID)
                             List.Remove(t);
 
                     }
                     switch (config.DamageType)
                     {
                         case 1: // 1：单个目标
-                            HurtMap = FilterHurt2(Map, Skill, SrcPos, config.AttackDistance);
+                            HurtMap = FilterHurt2(Map, Skill, SrcPos, config.AttackDistance, Skill.TargetMap);
                             break;
                         case 2: // 2：圆形范围
                             if (config.Ranges.Count < 1) // 配置错误
                                 return HurtMap;
-                            HurtMap = FilterHurt2(Map, Skill, SrcPos, config.Ranges[0]);
+                            HurtMap = FilterHurt2(Map, Skill, SrcPos, config.Ranges[0], List);
                             break;
                         case 3: // 3：扇形范围
                             if (config.Ranges.Count < 2)    // 配置错误
@@ -75,11 +76,11 @@ namespace RpgMap
             }
             return HurtMap;
         }
-        public static Dictionary<(int, long), MapActor> FilterHurt2(Map Map, MapSkill Skill, MapPos SrcPos, double Distance)
+        public static Dictionary<(int, long), MapActor> FilterHurt2(Map Map, MapSkill Skill, MapPos SrcPos, double Distance, List<(int, long)> List)
         {
             Dictionary<(int, long), MapActor> HurtMap = new();
             SkillConfig config = Skill.SkillConfig;
-            foreach (var Hurt in Skill.TargetMap)
+            foreach (var Hurt in List)
             {
                 var TarActor = MapCommon.GetActor(Map, Hurt);
                 if (TarActor != null && MapTool.CheckDistance(SrcPos, TarActor.GetPos(), Distance))

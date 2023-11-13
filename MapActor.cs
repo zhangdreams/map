@@ -105,12 +105,40 @@ namespace RpgMap
             {
                 case 1:
                     MapRole role = Map.Roles[ID];
-                    return role.Moving(upTime);
+                    var ret = role.Moving(upTime);
+                    if(IsArrival())
+                        DoStopMove();
+                    return ret;
                 case 2:
                     MapMonster monster = Map.Monsters[ID];
-                    return monster.Moving(upTime);
+                    ret = monster.Moving(upTime);
+                    if (IsArrival())
+                    {
+                        if (monster.Path.Count <= 0)
+                            DoStopMove();
+                        else
+                            monster.MoveNext(); // 未到达终点
+                    };
+                    return ret;
                 default:
                     return (0,0);
+            }
+        }
+
+        // 判断到达
+        public bool IsArrival()
+        {
+            // 允许位置出现一些误差
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    return Math.Round(role.PosX) == Math.Round(role.TargetX) && Math.Round(role.PosY) == Math.Round(role.TargetY);
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    return Math.Round(monster.PosX) == Math.Round(monster.TargetX) && Math.Round(monster.PosY) == Math.Round(monster.TargetY);
+                default:
+                    return false;
             }
         }
 
@@ -126,18 +154,16 @@ namespace RpgMap
                 {
                     throw new Exception($"pos is unvalid x={x},y={y}");
                 }
+                // todo 判断能否移动 一些状态的判断
+
                 MapPos Pos = GetPos();
                 Node Start = new((int)Pos.x, (int)Pos.y);
-                Node Goal = new Node((int)x, (int)y);
-                var Path = MapPath.FindPath(Map.MapID, Start, Goal);
-                if (Path == null)
-                {
-                    throw new Exception($"can move to pos x={x},y={y}");
-                }
+                Node Goal = new ((int)x, (int)y);
+                var Path = MapPath.FindPath(Map.MapID, Start, Goal) ?? throw new Exception($"can move to pos x={x},y={y}");
                 SetMoveState(true);
                 SetTargetPos(x, y);
                 SetPath(Path);
-                // todo 判断能否移动
+                
             }catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());

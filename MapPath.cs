@@ -33,14 +33,10 @@ namespace RpgMap
 
     class MapPath
     {
-        public static List<Node> FindPath(int MapID, Node start, Node goal)
+        public static List<Node>? FindPath(int MapID, Node start, Node goal)
         {
             if (!ContainsObstacleBetween(MapID, start, goal))    // 中间没有障碍物，直接可达
-            {
-                List<Node> ret = new();
-                ret.Add(goal);
-                return ret;
-            }
+                return new() { goal };
 
             List<Node> openSet = new();
             List<Node> closedSet = new();
@@ -78,7 +74,7 @@ namespace RpgMap
                 }
                 List<Node> Neighbors = GetNeighbors(MapID, current, step);
                 if (Neighbors.Count <= 0)
-                    return new List<Node>();
+                    return null;
                 foreach (Node neighbor in Neighbors)
                 {
                     if (closedSet.Contains(neighbor))
@@ -100,7 +96,7 @@ namespace RpgMap
                 }
             }
 
-            return new List<Node>(); // No path found
+            return null; // No path found
         }
 
         private static List<Node> ReconstructPath(Node node)

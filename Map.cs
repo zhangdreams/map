@@ -186,7 +186,7 @@ namespace RpgMap
                     continue;
                 }
                 int interval = config.Waves[wave];
-                // 是否能触发下一波次伤害
+                // 是否达到触发下一波次伤害时间
                 if (Skill.SkillTime + interval <= Now2) 
                     continue;
 
@@ -208,7 +208,7 @@ namespace RpgMap
                 Skill.CurWave++;
                 Skill.SkillTime = Now2;
 
-                // todo 同步效果
+                // todo 同步效果 sync EffectMaps
             }
         }
     }

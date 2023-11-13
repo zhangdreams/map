@@ -76,7 +76,10 @@ namespace RpgMap
                     step = neighborMaps[(current.X, current.Y)];
                     neighborMaps[(current.X, current.Y)] = step + 1;
                 }
-                foreach (Node neighbor in GetNeighbors(MapID, current, step))
+                List<Node> Neighbors = GetNeighbors(MapID, current, step);
+                if (Neighbors.Count <= 0)
+                    return new List<Node>();
+                foreach (Node neighbor in Neighbors)
                 {
                     if (closedSet.Contains(neighbor))
                     {

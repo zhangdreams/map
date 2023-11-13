@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,18 +18,27 @@ namespace RpgMap
         public int State { get; set; } = 1; // 状态 0死亡 1正常
         public double PosX { get; set; } = 0;   // 当前坐标
         public double PosY { get; set; } = 0;
+        public double BornX { get; set; } = 0;  // 出生点
+        public double BornY { get; set; } = 0;
         public int Dir { get; set; } = 0;   // 朝向
         public bool IsMoving { get; set; } = false; // 是否正在移动中
         public List<Node> Path { get; set; } = new();    // 寻路路径
         public double TargetX { get; set; } = 0;  // 移动的目标坐标点
         public double TargetY { get; set; } = 0;
+        public ArrayList doing = new() ;    // AI Doing
+        public double PatrolDistance { get; set; } = 3; // 巡逻半径
+        public double PursueDistance { get; set; } = 3; // 追击半径
+        public double AttackDistance { get; set; } = 1; // 攻击距离
+        public (int, long) TarKey;  // 攻击目标
 
-        public MapMonster(long ID, string Name, int Speed, int Camp)
+        public MapMonster(long ID, string Name, int Speed, int Camp, double BornX, double BornY)
         {
             this.ID = ID;
             this.Name = Name;
             this.Speed = Speed;
             this.Camp = Camp;
+            this.BornX = BornX;
+            this.BornY = BornY;
             // todo
         }
 

@@ -63,6 +63,16 @@ namespace RpgMap
             return CheckDistance(Pos1.x, Pos1.y, Pos2.x, Pos2.y, Distance);
         }
 
+        // 返回两个坐标点的距离
+        public static double GetDistance(double X, double Y, double X2, double Y2)
+        {
+            return Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
+        }
+        public static double GetDistance(MapPos Pos1, MapPos Pos2)
+        {
+            return GetDistance(Pos1.x, Pos1.y, Pos2.x, Pos2.y);
+        }
+
         // 判断x,y是否处于中心点为x2,y2半径为r 朝向为Dir角度为an的扇形范围内
         // dir为一个朝向，为扇形的中心线
         public static bool InSector(double X, double Y, double X2, double Y2, double dir, double an, double r)
@@ -89,6 +99,24 @@ namespace RpgMap
         public static bool InSector(MapPos Pos1, MapPos Pos2, double an, double r)
         {
             return InSector(Pos1.x, Pos1.y, Pos2.x, Pos2.y, Pos2.dir, an, r);
+        }
+
+        // 返回一个出生点为中心，半径R内的一个巡逻点
+        // 一般怪物的巡逻范围不会太大，这里不考虑寻路问题
+        public static (double, double) GetPatrolPos(double BornX, double BornY, double r)
+        {
+            // 生成随机半径
+            double randomRadius = r * Math.Sqrt(RandomDouble(0, 1));
+            // 生成随机角度（弧度）
+            double randomAngle = RandomDouble(0, 2 * Math.PI);
+            double randomX = BornX + randomRadius * Math.Cos(randomAngle);
+            double randomY = BornY + randomRadius * Math.Sin(randomAngle);
+            return (randomX, randomY);
+        }
+        private static double RandomDouble(double minValue, double maxValue)
+        {
+            Random random = new Random();
+            return minValue + (maxValue - minValue) * random.NextDouble();
         }
     }
 }

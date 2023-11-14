@@ -1,0 +1,32 @@
+[
+  {
+	"BuffID" :1,
+	"Name" : "buff1",
+	"Type" : 1,
+	"DurTime" : 3000,
+	"Level" : 1,
+	"EffectType" : 1,
+	"Value" : 2000,
+	"Func" : "addAttack"
+  },
+  {
+	"BuffID" :2,
+	"Name" : "buff2",
+	"Type" : 2,
+	"DurTime" : 3000,
+	"Level" : 1,
+	"EffectType" : 2,
+	"Value" : 3000,
+	"Func" : ""
+  },
+  {
+	"BuffID" :3,
+	"Name" : "buff3",
+	"Type" : 3,
+	"DurTime" : 3000,
+	"Level" : 1,
+	"EffectType" : 2,
+	"Value" : 3000,
+	"Func" : ""
+  }
+]

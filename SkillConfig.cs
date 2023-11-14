@@ -58,23 +58,14 @@ namespace RpgMap
             var configs = JsonSerializer.Deserialize<List<SkillConfig>>(json);
             foreach(var conf in configs)
             {
-                conf.Waves = StrToList(conf.WaveInterval);
-                conf.Ranges = StrToList(conf.RangeParams);
-                conf.SBuffs = StrToList(conf.SelfBuffs);
-                conf.TBuffs = StrToList(conf.TargetBuffs);
+                conf.Waves = Common.StrToList(conf.WaveInterval);
+                conf.Ranges = Common.StrToList(conf.RangeParams);
+                conf.SBuffs = Common.StrToList(conf.SelfBuffs);
+                conf.TBuffs = Common.StrToList(conf.TargetBuffs);
                 SkillConfigs[conf.SkillID] = conf;
                
                 //ShowConfig(conf.SkillID);
             }
-        }
-
-        public static List<int> StrToList(string str)
-        {
-            if (str == "")
-                return new List<int>();
-            string[] parts = str.Split(',');
-            List<int> list = parts.Select(part => int.Parse(part.Trim())).ToList();
-            return list;
         }
 
         public static void ShowConfig(int SkillID)

@@ -21,6 +21,11 @@ namespace RpgMap
             X = x; 
             Y = y;
         }
+        public MoveTo(MapPos pos)
+        {
+            X = pos.x;
+            Y = pos.y;
+        }
     }
     // 追击
     internal struct Pursue
@@ -79,17 +84,43 @@ namespace RpgMap
             return new Pursue(TarKey);
         }
 
-        public static object Fight(Map map, MapMonster monster)
+        public static object? Fight(Map map, MapMonster monster)
         {
             var actor = MapCommon.GetActor(map, monster.TarKey);
             if (actor == null)
                 return null;
             MapPos pos = actor.GetPos();
             if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
-                return new Pursue(monster.TarKey);  // todo 距离不够 追击
+                return new Pursue(monster.TarKey);  // 距离不够 追击
+            var Actor = MapCommon.GetActor(map, (2,monster.ID));
+            if (Actor == null) // 可以从ai列表中删除
+                return 0;
             // 选择一个技能释放
+            int SkillID = FilterSkillID(Actor.Skills);
+            if (SkillID == 0)
+                return null;
+            Actor.DoUseSkill(SkillID, pos, new List<(int, long)> { monster.TarKey });
+            return SkillID;
+        }
 
-            return new Fight();
+        // 筛选一个可以释放的技能ID
+        public static int FilterSkillID(Dictionary<int, ActorSkill> skillMap)
+        {
+            long Now2 = Time.Now2();
+            foreach (var skill in skillMap.Values)
+            {
+                var config = SkillReader.GetConfig(skill.SkillID);
+                if (config == null) 
+                    continue;
+                if (Now2 >= skill.UseTime + config.CD)
+                    return skill.SkillID;
+            }
+            return 0;
+        }
+
+        public static MoveTo ReturnBorn(MapMonster monster)
+        {
+            return new MoveTo(monster.BornX, monster.BornY);
         }
     }
 }

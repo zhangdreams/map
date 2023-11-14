@@ -190,7 +190,21 @@ namespace RpgMap
         // 添加buff 
         // durTime buff持续时间
         // value buff效果值
-        public void AddBuff(int buffID, int durTime, long value)
+        public void AddBuff(int buffID)
+        {
+            var config = BuffReader.GetConfig(buffID);
+            if (config == null)
+                return;
+            AddBuff(buffID, config.DurTime, config.Value);
+        }
+        public void AddBuff(int buffID, int durTime)
+        {
+            var config = BuffReader.GetConfig(buffID);
+            if (config == null)
+                return;
+            AddBuff(buffID, durTime, config.Value);
+        }
+        public void AddBuff(int buffID, int durTime, int value)
         {
             long Now2 = Time.Now2();
 
@@ -207,6 +221,39 @@ namespace RpgMap
                 MapBuff oldbuff = Buffs[buffID];
                 oldbuff.EndTime += durTime;
             }
+        }
+
+        public void DelBuff(int BuffID)
+        {
+            Buffs.Remove(BuffID);
+            // todo 可能会有些效果要触发
+        }
+
+        // 身上是否有指定类型的buff(比如判断无敌)
+        public bool HasBuff(int BuffType)
+        {
+            foreach(MapBuff buff in Buffs.Values)
+            {
+                var config = BuffReader.GetConfig(buff.BuffID);
+                if (config == null)
+                    continue;
+                if(config.Type == BuffType)
+                    return true;
+            }
+            return false;
+        }
+
+        public void LoopBuff(long Now2)
+        {
+            List<int> removeList = new();
+            foreach(var buff in Buffs.Values)
+            {
+                if(Now2 >= buff.EndTime)
+                    removeList.Add(buff.BuffID);
+                // todo 或许会有一些效果
+            }
+            foreach(var ID in removeList)
+                DelBuff(ID);
         }
 
         // 加血
@@ -262,6 +309,9 @@ namespace RpgMap
                         TargetMap.Remove(Key);
                 }
                 SkillConfig config = SkillReader.GetConfig(SkillID) ?? throw new Exception($"can not find skill config {SkillID}");
+                long Now2 = Time.Now2();
+                if (Now2 < config.CD + Skill.UseTime)
+                    throw new Exception($"skill in cd {SkillID}");
 
                 MapSkill SkillEntity = new(Type, ID, TargetMap, SkillID, pos);
                 Map.AddSkillEntity(SkillEntity);

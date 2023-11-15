@@ -10,13 +10,13 @@ namespace RpgMap
     internal class SkillConfig
     {
         public int SkillID { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public double AttackParam { get; set; } // 技能伤害参数
         public double AttackDistance { get; set; } // 攻击距离
         public int CD { get; set; } // 技能cd (ms)
         public int Type { get; set; }   // 0非指向技能 1指向性技能
         public int TotalWave { get; set; } // 技能总伤害波数
-        public string WaveInterval { get; set; }
+        public string WaveInterval { get; set; } = "";
         public List<int> Waves { get; set; } = new(); // 波次间隔
         public int DamageType { get; set; } // 伤害范围 1：单个目标 2：圆形范围 3：扇形范围 4：矩形范围
 
@@ -26,12 +26,12 @@ namespace RpgMap
         //      2: {半径}
         //      3: {半径， 扇形角度}
         //      3: {长， 宽}
-        public string RangeParams { get; set; }
+        public string RangeParams { get; set; } = "";
         public List<int> Ranges { get; set; } = new(); 
         public int TargetNum { get; set; } // 最大目标数量
-        public string SelfBuffs { get; set; }
+        public string SelfBuffs { get; set; } = "";
         public List<int> SBuffs { get; set; } = new(); // 给自己加的buff（通常是技能释放的时候）
-        public string TargetBuffs { get; set; }
+        public string TargetBuffs { get; set; } = "";
 
         public List<int> TBuffs { get;set; } = new(); // 给目标加的buff（通常是波次结束）
     }

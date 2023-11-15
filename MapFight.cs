@@ -28,7 +28,7 @@ namespace RpgMap
             List<MapEffect> Effects = new();
             Prop SrcProp = SrcActor.Prop;
             Prop TarProp = TarActor.Prop;
-            if (IsMiss(SrcProp, TarProp))
+            if (IsMiss(SrcProp, TarProp) || TarActor.HasBuff(2))    //检查miss和无敌
                 return Effects;
             // todo 一系列计算
             long Damage = (long)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;

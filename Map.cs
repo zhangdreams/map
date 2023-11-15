@@ -240,14 +240,17 @@ namespace RpgMap
                 Console.WriteLine(e.ToString());
             }
         }
-        public void LoopMonsterAI2(long _Now2)
+        public void LoopMonsterAI2(long Now2)
         {
             List<long> removeKeys = new();
             foreach(var monster in Monsters.Values)
             {
                 var Actor = MapCommon.GetActor(this, (2, monster.ID));
                 if (Actor == null)
+                {
                     removeKeys.Add(monster.ID);
+                    continue;
+                }
 
                 var doingList = monster.doing;
                 if (doingList.Count <= 0)
@@ -333,7 +336,6 @@ namespace RpgMap
                             continue;
                     }
                 }
-
             }
             foreach(long ID in removeKeys)
                 Monsters.Remove(ID);

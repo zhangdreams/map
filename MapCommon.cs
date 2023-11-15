@@ -42,7 +42,6 @@ namespace RpgMap
                         (int ttype, long tID) = t;
                         if ((ttype != 1 && ttype != 2) || tID == SrcActor.ID)
                             List.Remove(t);
-
                     }
                     switch (config.DamageType)
                     {
@@ -65,6 +64,8 @@ namespace RpgMap
                                 if (TarActor != null && MapTool.InSector(SrcPos, TarActor.GetPos(), an, r))
                                 {
                                     HurtMap[hurt] = TarActor;
+                                    if (HurtMap.Count >= config.TargetNum)
+                                        return HurtMap;
                                     break;
                                 }
                             };
@@ -86,6 +87,8 @@ namespace RpgMap
                 if (TarActor != null && MapTool.CheckDistance(SrcPos, TarActor.GetPos(), Distance))
                 {
                     HurtMap[Hurt] = TarActor;
+                    if (HurtMap.Count >= config.TargetNum)
+                        return HurtMap;
                 }
             };
             return HurtMap;

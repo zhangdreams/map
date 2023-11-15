@@ -11,9 +11,10 @@ namespace RpgMap
     {
         public int BuffID { get; set; }     // buff ID
         public string Name { get; set; } = ""; // name
-        public int Type {  get; set; }      // buff类型 
+        public int Type {  get; set; }      // buff类型 2:无敌
         public int DurTime { get; set; }    // buff持续时长
-        public int Level { get; set; }  // buff等级 相同Type 等级高的会替换掉等级低的，相同等级会延长buff时间
+        public int Level { get; set; }  // buff等级 相同Type 等级高的会替换掉等级低的
+        public int AddType { get; set; }    // 叠加类型 根据相同Type 相同等级时： 1:叠加buff时长 2:叠加buff值 3:取buff值最大值或最小值
         public int EffectType { get; set; } //  效果类型 1:属性改变  2:效果类型
         public int Value { get; set; }  // buff效果值
         public string Func { get; set; } = ""; // 效果函数(属性类用来返回改变的属性索引)

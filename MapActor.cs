@@ -12,14 +12,18 @@ namespace RpgMap
         public int Type { get; set; }   // ActorType  1:玩家 2:怪物
         public long ID { get; set; }
         public Prop Prop { get; set; } = new(); // 属性
+        public Prop BaseProp { get; set; } = new(); // 刚进地图保存的属性
         public Dictionary<int, MapBuff> Buffs { get; set; } = new();
+        public Dictionary<int, int> BuffProps { get; set; } = new();    // 用于保存buff修改的属性，方便buff删除时清除属性
         public Dictionary<int, ActorSkill> Skills { get; set; } = new();
         public Map Map;
 
-        public MapActor(int Type, long ID) 
+        public MapActor(int Type, long ID, Prop Prop) 
         { 
             this.Type = Type;
             this.ID = ID;
+            this.Prop = Prop;
+            this.BaseProp = Prop;
         }
 
         public MapPos GetPos()
@@ -212,21 +216,99 @@ namespace RpgMap
             {
                 MapBuff buff = new(buffID, Now2 + durTime, value);
                 Buffs[buffID] = buff;
-                // 新增buff(触发buff效果)
+                DoBuffEffect(buff);
             }
             else
             {
-                // 替换、叠加
-                // todo 叠加持续时间
                 MapBuff oldbuff = Buffs[buffID];
                 oldbuff.EndTime += durTime;
+                MapBuff Buff2 = DoAddSameBuff(buffID, durTime, value, oldbuff);
+                Buffs[buffID] = Buff2;
+                DoBuffEffect(Buff2);
             }
+           
+        }
+
+        public static MapBuff DoAddSameBuff(int BuffID, int durTime, int value, MapBuff Buff)
+        {
+            var config = BuffReader.GetConfig(BuffID);
+            switch (config.AddType)
+            {
+                case 1: // 叠加buff时长
+                    Buff.EndTime += durTime;
+                    break;
+                case 2: // 叠加buff值
+                    Buff.Value += value;
+                    break;
+                case 3: // 取buff值最大值或最小值
+                    Buff.Value = (Buff.Value <0 && value < 0) ? Math.Min(value, Buff.Value) : Math.Max(value, Buff.Value);
+                    break;
+                default:
+                    Console.WriteLine($"unhandle buff addtype: {config.AddType} buffid: {BuffID}");
+                    break;
+            }
+            return Buff;
+        }
+
+        public void DoBuffEffect(MapBuff buff)
+        {
+            var config = BuffReader.GetConfig(buff.BuffID);
+            switch(config.EffectType)
+            {
+                case 1: // 属性改变
+                    AddBuffChangeProp(buff, config);
+                    break;
+                case 2: // todo 效果类
+                    break;
+                default:
+                    Console.WriteLine($"unhandle buff effect Type :{config.EffectType}, buffid:{buff.BuffID}");
+                    break;
+            }
+        }
+        public void AddBuffChangeProp(MapBuff buff, BuffConfig config)
+        {
+            if (config.Func == "")
+                return;
+            BuffProps.TryGetValue(buff.BuffID, out int OldAdd);
+            var OldValue = Common.GetFieldValue(Prop, config.Func);
+            OldValue ??= 0;
+            int NewAdd;
+            if (OldAdd < 0 && buff.Value < 0)
+            {
+                NewAdd = Math.Min(OldAdd, buff.Value);
+                if (NewAdd >= OldAdd)
+                    return;
+            }
+            else
+            {
+                NewAdd = Math.Max(OldAdd, buff.Value);
+                if (NewAdd <= OldAdd)
+                    return;
+            }
+            BuffProps[buff.BuffID] = NewAdd;
+            Common.SetFieldValue(Prop, config.Func, Math.Max(0, (int)OldValue + (NewAdd - OldAdd)));
         }
 
         public void DelBuff(int BuffID)
         {
             Buffs.Remove(BuffID);
+            if(BuffProps.TryGetValue(BuffID, out int Add))
+            {
+                BuffProps.Remove(BuffID);
+                DelBuffChangeProp(BuffID, Add);
+            }
             // todo 可能会有些效果要触发
+        }
+
+        public void DelBuffChangeProp(int BuffID, int Add)
+        {
+            var config = BuffReader.GetConfig(BuffID);
+            if (config.Func == "")
+                return;
+            var OldValue = Common.GetFieldValue(Prop, config.Func);
+            OldValue ??= 0;
+            Common.SetFieldValue(Prop, config.Func, Math.Max(0, (int)OldValue - Add));
+
         }
 
         // 身上是否有指定类型的buff(比如判断无敌)

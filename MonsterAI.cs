@@ -73,10 +73,11 @@ namespace RpgMap
                     continue;
 
                 double dis = MapTool.GetDistance(monster.PosX, monster.PosY, pos.x, pos.y);
-                if (dis == -1)
+                if (Distance == -1 || dis < Distance)
                 {
                     TarKey = key;
                     Distance = dis;
+                    monster.TarKey = key;
                 }
             }
             if (Distance == -1)
@@ -89,6 +90,12 @@ namespace RpgMap
             var actor = MapCommon.GetActor(map, monster.TarKey);
             if (actor == null)
                 return null;
+            if (!actor.IsAlive())
+            {
+                monster.TarKey = (0, 0);
+                return null;
+            }
+            
             MapPos pos = actor.GetPos();
             if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
                 return new Pursue(monster.TarKey);  // 距离不够 追击

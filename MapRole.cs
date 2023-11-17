@@ -30,6 +30,11 @@ namespace RpgMap
             // todo
         }
 
+        public bool IsAlive()
+        {
+            return State == 1;
+        }
+
         public bool GetMoveState()
         {
             return IsMoving;

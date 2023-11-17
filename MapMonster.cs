@@ -43,6 +43,11 @@ namespace RpgMap
             // todo
         }
 
+        public bool IsAlive()
+        {
+            return State == 1;
+        }
+
         public bool GetMoveState()
         {
             return IsMoving;
@@ -88,11 +93,14 @@ namespace RpgMap
         }
 
         // 扣血
-        public long DecHp(long Dec)
+        public long DecHp(long Dec, int SrcType, long SrcActorID)
         {
             if (State > 0)
             {
                 HP = Math.Max(HP - Dec, 0);
+                (int t, long i) = TarKey;
+                if(t == 0 && i == 0)    // 如果有目标暂时不切换
+                    TarKey = (SrcType, SrcActorID);
             }
             if (HP <= 0)
                 OnDead();

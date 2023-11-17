@@ -32,7 +32,7 @@ namespace RpgMap
                 return Effects;
             // todo 一系列计算
             long Damage = (long)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;
-            TarActor.DoDecHP(Damage);
+            TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
 
             MapEffect Effect = new(TarActor.Type, TarActor.ID, 1, Damage);
             Effects.Add(Effect);

@@ -80,8 +80,6 @@ namespace RpgMap
                     LoopTick200 += 1;
                     // todo 200ms 轮询的可以放一些在这里处理，平衡一下压力
                 }
-
-                
             }
             catch(Exception e)
             {
@@ -126,14 +124,14 @@ namespace RpgMap
             return NewHp;
         }
 
-        public long DoDecHP(int ActorType, long ActorID, long Dec)
+        public long DoDecHP(int ActorType, long ActorID, long Dec, int SrcType, long SrcActorID)
         {
             long NewHp = 0;
             var Key = (ActorType, ActorID);
             if (ActorMap.ContainsKey(Key))
             {
                 MapActor Actor = ActorMap[Key];
-                NewHp = Actor.DoDecHP(Dec);
+                NewHp = Actor.DoDecHP(Dec, SrcType, SrcActorID);
             }
             return NewHp;
         }
@@ -264,26 +262,29 @@ namespace RpgMap
                 }
                 else if (doing is MoveTo)  // 继续移动
                 {
-                    var TActor = MapCommon.GetActor(this, monster.TarKey);
-                    if (TActor == null)  // 追击目标不存在了
-                    {
-                        doingList.Remove(doing);
-                        continue;
-                    }
-                    MapPos pos = TActor.GetPos();
                     (int t, long i) = monster.TarKey;
                     bool hasTarget = t > 0 && i > 0;
-                    if (hasTarget && !MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance)) // 超出追击距离
+                    if (hasTarget)
                     {
-                        doingList.Remove(doing);
-                        MoveTo moveto = MonsterAI.ReturnBorn(monster);  // 回出生点
-                        doingList.Insert(0, moveto);
-                    }
-                    if (Math.Round(monster.PosX) == Math.Round(((MoveTo)doing).X) && Math.Round(monster.PosY) == Math.Round(((MoveTo)doing).Y))
-                    {
-                        doingList.Remove(doing);
-                        if (t > 0 && i > 0)
+                        var TActor = MapCommon.GetActor(this, monster.TarKey);
+                        if (TActor == null)  // 追击目标不存在了
+                        {
+                            doingList.Remove(doing);
+                            continue;
+                        }
+                        MapPos pos = TActor.GetPos();
+                        // 超出追击距离或目标死亡
+                        if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance) || !TActor.IsAlive()) 
+                        {
+                            doingList.Remove(doing);
+                            MoveTo moveto = MonsterAI.ReturnBorn(monster);  // 回出生点
+                            doingList.Insert(0, moveto);
+                        }
+                        if (Math.Round(monster.PosX) == Math.Round(((MoveTo)doing).X) && Math.Round(monster.PosY) == Math.Round(((MoveTo)doing).Y))
+                        {
+                            doingList.Remove(doing);
                             doingList.Insert(0, new Fight());
+                        }
                     }
                     continue;
                 }
@@ -296,12 +297,13 @@ namespace RpgMap
                         doingList.Remove(doing);
                         continue;
                     }
+
                     MapPos pos = TActor.GetPos();
-                    if (MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance))
+                    if (TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance))
                         doingList.Insert(0, new MoveTo(pos));
                     else
                     { 
-                        // 超出追击距离
+                        // 超出追击距离或目标已死亡
                         doingList.Remove(doing);
                         MoveTo moveto = MonsterAI.ReturnBorn(monster);
                         doingList.Insert(0, moveto);

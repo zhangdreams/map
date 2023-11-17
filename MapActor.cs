@@ -26,6 +26,21 @@ namespace RpgMap
             this.BaseProp = Prop;
         }
 
+        public bool IsAlive()
+        {
+            switch(Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    return role.IsAlive();
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    return monster.IsAlive();
+                default:
+                    return false;
+            }
+        }
+
         public MapPos GetPos()
         {
             switch (Type)
@@ -358,7 +373,7 @@ namespace RpgMap
             return NewHp;
         }
         // 扣血
-        public long DoDecHP(long Dec)
+        public long DoDecHP(long Dec, int SrcType, long SrcActorID)
         {
             long NewHp = 0;
             switch (Type)
@@ -369,7 +384,7 @@ namespace RpgMap
                     break;
                 case 2:
                     MapMonster monster = Map.Monsters[ID];
-                    NewHp = monster.DecHp(Dec);
+                    NewHp = monster.DecHp(Dec, SrcType, SrcActorID);
                     break;
                 default:
                     break;

@@ -44,7 +44,7 @@ namespace RpgMap
             {
                 BuffConfigs[conf.BuffID] = conf;
 
-                Show(conf.BuffID);
+                // Show(conf.BuffID);
             }
         }
 

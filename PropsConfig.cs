@@ -27,7 +27,7 @@ namespace RpgMap
                 conf.HP = conf.MaxHp;
                 PropList[conf.Index] = conf;
 
-                Show(conf.Index);
+                // Show(conf.Index);
             }
         }
 

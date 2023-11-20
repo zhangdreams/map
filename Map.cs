@@ -32,6 +32,7 @@ namespace RpgMap
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
         public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
         public int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
+        public int LoopTick5000 { get; set; } = 1;
 
         public Map(int id, int mapID, string mapName) 
         {
@@ -73,12 +74,20 @@ namespace RpgMap
                 if (LoopTick200 == 2)
                 {
                     LoopTick200 = 1;
+                    LoopTick5000 += 1;
                     LoopMonsterAI(Now2);    
                 }
                 else
                 {
                     LoopTick200 += 1;
                     // todo 200ms 轮询的可以放一些在这里处理，平衡一下压力
+                }
+
+                // 5s 轮询 这里用来输入一些数据
+                if (LoopTick5000 >= 25)
+                {
+                    LoopTick5000 = 1;
+                    ShowDict();
                 }
             }
             catch(Exception e)
@@ -276,6 +285,7 @@ namespace RpgMap
                 if (doing is Idle)  // 添加一个巡逻节点
                 {
                     MoveTo moveTo = MonsterAI.Patrol(monster);
+                    Actor.DoStartMove(moveTo.X, moveTo.Y);
                     doingList.Insert(0, moveTo);
                     continue;
                 }
@@ -293,7 +303,7 @@ namespace RpgMap
                         }
                         MapPos pos = TActor.GetPos();
                         // 超出追击距离或目标死亡
-                        if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance) || !TActor.IsAlive()) 
+                        if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance) || !TActor.IsAlive())
                         {
                             doingList.Remove(doing);
                             MoveTo moveto = MonsterAI.ReturnBorn(monster);  // 回出生点
@@ -305,6 +315,8 @@ namespace RpgMap
                             doingList.Insert(0, new Fight());
                         }
                     }
+                    else if (Actor.IsArrival())
+                        doingList.Remove(doing);
                     continue;
                 }
                 else if(doing is Pursue)    // 追击
@@ -367,6 +379,18 @@ namespace RpgMap
             }catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+            }
+        }
+
+        public void ShowDict()
+        {
+            Console.WriteLine($"monster number : {MonsterNum}");
+            int n = 1;
+            foreach(var monster in Monsters.Values)
+            {
+                Console.WriteLine($"monster ({n++}) :");
+                Console.WriteLine($"     ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; curHp:{(float)(monster.HP/monster.MaxHp*100)}");
+                Console.WriteLine($"    doing {monster.doing.Count}, do {monster.doing[0]}, {monster.TargetY}, {monster.TargetY}");
             }
         }
     }

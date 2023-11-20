@@ -22,6 +22,11 @@ namespace RpgMap
     {
         public static Dictionary<int, MonsterConfig> MonsterList = new();
 
+        public static List<int> GetMonsterIDs()
+        {
+            return MonsterList.Keys.ToList();
+        }
+
         public static MonsterConfig? GetConfig(int MonsterID)
         {
             if(MonsterList.ContainsKey(MonsterID))
@@ -37,7 +42,7 @@ namespace RpgMap
             {
                 MonsterList[conf.ID] = conf;
 
-                Show(conf.ID);
+                // Show(conf.ID);
             }
         }
 

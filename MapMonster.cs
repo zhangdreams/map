@@ -10,6 +10,7 @@ namespace RpgMap
     internal class MapMonster
     {
         public long ID { get; set; } = 0;    // 唯一ID
+        public int MonsterID { get; set; } = 0; // 配置ID
         public string Name { get; set; } = ""; // 怪物名
         public int Level { get; set; } = 0; // 等级
         public long HP { get; set; } = 0;   // 当前血量
@@ -32,15 +33,18 @@ namespace RpgMap
         public double AttackDistance { get; set; } = 1; // 攻击距离
         public (int, long) TarKey;  // 攻击目标
 
-        public MapMonster(long ID, string Name, int Speed, int Camp, double BornX, double BornY)
+        public MapMonster(long ID, int MonsterID, string Name, int Speed, int Camp, double BornX, double BornY)
         {
             this.ID = ID;
+            this.MonsterID = MonsterID;
             this.Name = Name;
             this.Speed = Speed;
             this.Camp = Camp;
             this.BornX = BornX;
             this.BornY = BornY;
-            // this.doing.Add(new Idle());
+            this.PosX = BornX;
+            this.PosY = BornY;
+            this.doing.Add(new Idle());
             // todo
         }
 

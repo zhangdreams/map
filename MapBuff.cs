@@ -18,4 +18,10 @@ namespace RpgMap
             this.Value = Value;
         }
     }
+
+    public enum BuffType
+    {
+        god = 2,    // 无敌
+        shield = 3 // 护盾
+    }
 }

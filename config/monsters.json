@@ -1,0 +1,20 @@
+[
+  {
+	"ID" :1,
+	"Name" : "Boss1",
+	"Level" : 10,
+	"PropID" : 2,
+	"PatrolDistance" : 15,
+	"PursueDistance" : 12,
+	"AttackDistance" : 5
+  },
+  {
+	"ID" :2,
+	"Name" : "Boss2",
+	"Level" : 15,
+	"PropID" : 3,
+	"PatrolDistance" : 15,
+	"PursueDistance" : 12,
+	"AttackDistance" : 5
+  }
+]

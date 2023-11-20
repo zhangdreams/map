@@ -1,0 +1,23 @@
+[
+  {
+	"Index" :1,
+	"MaxHp" : 1000,
+	"Attack" : 15,
+	"Defense" : 12,
+	"Speed" : 120
+  },
+  {
+	"Index" :2,
+	"MaxHp" : 2000,
+	"Attack" : 30,
+	"Defense" : 20,
+	"Speed" : 120
+  },
+  {
+	"Index" :3,
+	"MaxHp" : 4000,
+	"Attack" : 50,
+	"Defense" : 40,
+	"Speed" : 120
+  }
+]

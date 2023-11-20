@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -87,6 +88,8 @@ namespace RpgMap
                 Console.WriteLine($"TBuffs:{string.Join(",", config.TBuffs)}");
                 Console.WriteLine();
             }
+            else
+                Console.WriteLine($"config {SkillID} not found");
         }
     }
 }

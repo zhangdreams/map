@@ -26,6 +26,7 @@ namespace RpgMap
 
         public int RoleNum { get; set; } = 0; // 地图内玩家数量
         public Dictionary<long, MapRole> Roles { get; set; } = new(); // 保存玩家实例
+        public int MonsterNum { get; set; } = 0;    // 地图内怪物数量
         public Dictionary<long, MapMonster> Monsters { get; set; } = new(); 
         public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
@@ -64,7 +65,6 @@ namespace RpgMap
             {
                 long Now2 = Time.Now2();
                 // 100ms 一次轮询
-                // todo 
                 LoopMoving(Now2);
                 LoopSkills(Now2);
                 LoopBuff(Now2);
@@ -98,9 +98,9 @@ namespace RpgMap
             MapRole.PosX = PosX;
             MapRole.PosY = PosY;
             Roles[MapRole.ID] = MapRole;
-            RoleNum++;
+            RoleNum ++;
             MapActor.Map = this;
-            ActorMap[(MapActor.Type, MapActor.ID)] = MapActor;
+            ActorMap[(1, MapActor.ID)] = MapActor;
             // todo
         }
 
@@ -108,11 +108,25 @@ namespace RpgMap
         {
             Roles.Remove(RoleID);
             ActorMap.Remove((1, RoleID));
-            RoleNum--;
+            RoleNum --;
             // todo
         }
 
-        public long DoAddHP(int ActorType, long ActorID, long Add)
+        public void DoMonsterEnter(MapMonster monster, MapActor MapActor)
+        {
+            Monsters[monster.ID] = monster;
+            MonsterNum ++;
+            MapActor.Map = this;
+            ActorMap[(2, MapActor.ID)] = MapActor;
+        }
+        public void DoMonsterExit(long MonsterID)
+        {
+            Monsters.Remove(MonsterID);
+            ActorMap.Remove((2,MonsterID));
+            MonsterNum --;
+        }
+
+        public long DoAddHP(int ActorType, long ActorID, int Add)
         {
             long NewHp = 0;
             var Key = (ActorType, ActorID);
@@ -124,7 +138,7 @@ namespace RpgMap
             return NewHp;
         }
 
-        public long DoDecHP(int ActorType, long ActorID, long Dec, int SrcType, long SrcActorID)
+        public long DoDecHP(int ActorType, long ActorID, int Dec, int SrcType, long SrcActorID)
         {
             long NewHp = 0;
             var Key = (ActorType, ActorID);
@@ -209,13 +223,14 @@ namespace RpgMap
                 List<MapEffect> EffectMaps = new();
                 foreach(var TarActor in HurtMap.Values)
                 {
-                    List<MapEffect> Effects = MapFight.DoFight(this, SrcActor, TarActor, config);
+                    List<MapEffect> Effects = MapFight.DoFight(SrcActor, TarActor, config);
                     if(config.TBuffs.Count > 0)
                     {
                         // 可能会对目标添加buff
                         foreach (var TarEffect in EffectMaps)
                         {
-                            //todo
+                            var TActor = MapCommon.GetActor(this, (TarEffect.ActorType, TarEffect.ActorID));
+                            TActor.AddBuff(config.TBuffs);
                         }
                     }
                     EffectMaps.AddRange(Effects);
@@ -251,8 +266,12 @@ namespace RpgMap
                 }
 
                 var doingList = monster.doing;
-                if (doingList.Count <= 0)
+                if (doingList.Count <= 0) // 添加一个巡逻节点
+                {
+                    MoveTo moveTo = MonsterAI.Patrol(monster);
+                    doingList.Insert(0, moveTo);
                     continue;
+                }
                 var doing = doingList[0];
                 if (doing is Idle)  // 添加一个巡逻节点
                 {
@@ -323,14 +342,7 @@ namespace RpgMap
                         case int SkillID:
                             if (SkillID > 0)
                             {
-                                var TActor = MapCommon.GetActor(this, monster.TarKey);
-                                if (TActor == null)  // 追击目标不存在了
-                                {
-                                    doingList.Remove(doing);
-                                    MoveTo moveto = MonsterAI.ReturnBorn(monster);
-                                    doingList.Insert(0, moveto);
-                                    continue;
-                                }
+                                var TActor = MapCommon.GetActor(this, monster.TarKey); // Fight中已过滤掉目标死亡或不存在的情况
                                 Actor.DoUseSkill(SkillID, TActor.GetPos(), new List<(int, long)> { monster.TarKey });
                             }
                             break;

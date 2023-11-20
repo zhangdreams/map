@@ -6,6 +6,7 @@ namespace RpgMap
     {
         public long ID { get; set; } = 0;    // 唯一ID
         public string Name { get; set; } = ""; // 角色名
+        public int Level { get; set; } = 0; // 等级
         public long HP { get; set; } = 0;   // 当前血量
         public long MaxHp { get; set; } = 0;    // 最大血量
         public int Speed { get; set; } = 0; // 移动速度
@@ -65,7 +66,7 @@ namespace RpgMap
         }
 
         // 加血
-        public long AddHp(long Add)
+        public long AddHp(int Add)
         {
             if (State > 0)
             {
@@ -75,7 +76,7 @@ namespace RpgMap
         }
 
         // 扣血
-        public long DecHp(long Dec)
+        public long DecHp(int Dec)
         {
             if(State > 0)
             {

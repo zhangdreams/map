@@ -23,15 +23,15 @@ namespace RpgMap
 
     internal class MapFight
     {
-        public static List<MapEffect> DoFight(Map Map, MapActor SrcActor, MapActor TarActor, SkillConfig config)
+        public static List<MapEffect> DoFight(MapActor SrcActor, MapActor TarActor, SkillConfig config)
         {
             List<MapEffect> Effects = new();
             Prop SrcProp = SrcActor.Prop;
             Prop TarProp = TarActor.Prop;
-            if (IsMiss(SrcProp, TarProp) || TarActor.HasBuff(2))    //检查miss和无敌
+            if (TarActor.HasBuff(BuffType.god) || IsMiss(SrcActor, SrcProp, TarActor, TarProp))    //检查miss和无敌
                 return Effects;
-            // todo 一系列计算
-            long Damage = (long)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;
+            // todo 一系列计算,这里先简单计算
+            int Damage = (int)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;
             TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
 
             MapEffect Effect = new(TarActor.Type, TarActor.ID, 1, Damage);
@@ -40,13 +40,13 @@ namespace RpgMap
             return Effects;
         }
 
-        public static bool IsMiss(Prop SrcProp, Prop TarProp)
+        public static bool IsMiss(MapActor SrcActor, Prop SrcProp, MapActor TarActor, Prop TarProp)
         {
             // todo 是否miss
             return false;
         }
 
-        public static bool IsCrit(Prop SrcProp, Prop TarProp)
+        public static bool IsCrit(MapActor SrcActor, Prop SrcProp, MapActor TarActor, Prop TarProp)
         {
             // todo 是否暴击
             return false;

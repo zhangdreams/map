@@ -216,6 +216,13 @@ namespace RpgMap
                 return;
             AddBuff(buffID, config.DurTime, config.Value);
         }
+        public void AddBuff(List<int> buffList)
+        {
+            foreach(int buffID in buffList)
+            {
+                AddBuff(buffID);
+            }
+        }
         public void AddBuff(int buffID, int durTime)
         {
             var config = BuffReader.GetConfig(buffID);
@@ -273,7 +280,7 @@ namespace RpgMap
                 case 1: // 属性改变
                     AddBuffChangeProp(buff, config);
                     break;
-                case 2: // todo 效果类
+                case 2: // 效果类
                     break;
                 default:
                     Console.WriteLine($"unhandle buff effect Type :{config.EffectType}, buffid:{buff.BuffID}");
@@ -339,6 +346,23 @@ namespace RpgMap
             }
             return false;
         }
+        public bool HasBuff(BuffType type)
+        {
+            return HasBuff((int)type);
+        }
+
+        public MapBuff? GetBuffByType(BuffType type)
+        {
+            foreach (MapBuff buff in Buffs.Values)
+            {
+                var config = BuffReader.GetConfig(buff.BuffID);
+                if (config == null)
+                    continue;
+                if (config.Type == (int)type)
+                    return buff;
+            }
+            return null;
+        }
 
         public void LoopBuff(long Now2)
         {
@@ -354,7 +378,7 @@ namespace RpgMap
         }
 
         // 加血
-        public long DoAddHP(long Add)
+        public long DoAddHP(int Add)
         {
             long NewHp = 0;
             switch(Type)
@@ -373,8 +397,20 @@ namespace RpgMap
             return NewHp;
         }
         // 扣血
-        public long DoDecHP(long Dec, int SrcType, long SrcActorID)
+        public long DoDecHP(int Dec, int SrcType, long SrcActorID)
         {
+            // 护盾承伤
+            var buff = GetBuffByType(BuffType.shield);
+            if (buff != null)
+            {
+                int decShield = Math.Min(Dec, buff.Value);
+                Dec -= decShield;
+                
+                if(buff.Value - decShield > 0)
+                    buff.Value -= decShield;
+                else 
+                    DelBuff(buff.BuffID);   // 护盾消失
+            }
             long NewHp = 0;
             switch (Type)
             {
@@ -413,12 +449,7 @@ namespace RpgMap
                 MapSkill SkillEntity = new(Type, ID, TargetMap, SkillID, pos);
                 Map.AddSkillEntity(SkillEntity);
                 if(config.SBuffs.Count > 0)
-                {
-                    foreach(var Buff in config.SBuffs)
-                    {
-                        // todo 可能会给自己添加buff
-                    }
-                }
+                   AddBuff(config.SBuffs);
             }
             catch (Exception e)
             {

@@ -100,6 +100,8 @@ namespace RpgMap
                 foreach (var v in c.UnWalkList)
                     Console.Write($"{v.x},{v.y};");
             }
+            else
+                Console.WriteLine($"config {MapID} not found");
         }
     }
 }

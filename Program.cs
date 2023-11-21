@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace RpgMap
 {
@@ -29,10 +30,6 @@ namespace RpgMap
             }
             MapMgr.ShowDict();
             BossEnterMap(1);
-
-
-
-            //Console.WriteLine();
 
             //Prop prop = new();
             //Console.WriteLine($"attack value :{Common.GetFieldValue(prop, "Attack")}");
@@ -68,9 +65,23 @@ namespace RpgMap
                 MapMonster monster = new(MID, ID, config.Name, prop.Speed, camp, 10 * camp, 10 * camp)
                 {
                     HP = prop.MaxHp,
-                    MaxHp = prop.MaxHp
+                    MaxHp = prop.MaxHp,
+                    PatrolDistance = config.PatrolDistance,
+                    PursueDistance = config.PatrolDistance,
+                    AttackDistance = config.AttackDistance,
                 };
-                MapActor actor = new(2, MID, prop);
+                monster.doing.Add(new Patrol2());
+                Dictionary<int, ActorSkill> skills = new();
+                int skillPos = 1;
+                foreach (var sid in config.Skills)
+                {
+                    ActorSkill skill = new(sid, skillPos);
+                    skills[sid] = skill;
+                }
+                MapActor actor = new(2, MID, prop, map)
+                {
+                    Skills = skills,
+                };
                 MID++;
                 camp++;
 

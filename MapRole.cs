@@ -83,7 +83,7 @@ namespace RpgMap
                 HP = Math.Max(HP - Dec, 0);
             }
             if (HP <= 0)
-                onDead();
+                OnDead();
             return HP;
         }
 
@@ -96,7 +96,7 @@ namespace RpgMap
         }
 
         // 死亡事件
-        public void onDead()
+        public void OnDead()
         {
            State = 0;
            // todo

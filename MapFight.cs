@@ -34,6 +34,7 @@ namespace RpgMap
             int Damage = (int)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;
             TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
 
+            //Console.WriteLine($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} damage:{Damage}");
             MapEffect Effect = new(TarActor.Type, TarActor.ID, 1, Damage);
             Effects.Add(Effect);
 

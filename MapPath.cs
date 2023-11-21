@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,12 +10,12 @@ namespace RpgMap
 {
     class Node
     {
-        public int X { get; }
-        public int Y { get; }
-        public int G { get; set; }  // 从起始节点到当前节点的代价
-        public int H { get; set; }  // 启发式函数值
+        public int X { get; } = 0;
+        public int Y { get; } = 0;
+        public int G { get; set; } = 0;  // 从起始节点到当前节点的代价
+        public int H { get; set; } = 0;  // 启发式函数值
         public int F { get { return G + H; } }  // 评估函数值
-        public Node Parent { get; set; }
+        public Node Parent { get; set; } = new(0, 0);
 
         public Node(int x, int y)
         {
@@ -122,7 +123,7 @@ namespace RpgMap
                 int newX = node.X + dx[i];
                 int newY = node.Y + dy[i];
 
-                Node newNode = new Node(newX, newY);
+                Node newNode = new (newX, newY);
                 // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
                 if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY) && !ContainsObstacleBetween(MapID, node, newNode))
                 {

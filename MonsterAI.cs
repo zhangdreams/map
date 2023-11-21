@@ -10,6 +10,7 @@ namespace RpgMap
     internal struct Idle
     {
         public Idle() { }
+        public static void Show() { }
     }
     // 移动
     internal struct MoveTo
@@ -26,6 +27,10 @@ namespace RpgMap
             X = pos.x;
             Y = pos.y;
         }
+        public readonly void Show()
+        {
+            Console.WriteLine($"X：{X}, Y:{Y}");
+        }
     }
     // 追击
     internal struct Pursue
@@ -35,11 +40,23 @@ namespace RpgMap
         {
             this.Key = Key;
         }
+
+        public readonly void Show()
+        {
+            Console.WriteLine($"pursue key : {Key}");
+        }
     }
 
     internal struct Fight
     {
         public Fight() { }
+        public static void Show() { }
+    }
+
+    internal struct Patrol2
+    {
+        public Patrol2() { }
+        public static void Show() { }
     }
 
     internal class MonsterAI
@@ -50,11 +67,21 @@ namespace RpgMap
             return new Idle();
         }
 
-        // 巡逻
+        // 被动怪巡逻
         public static MoveTo Patrol(MapMonster monster)
         {
             (double randomX, double randomY) = MapTool.GetPatrolPos(monster.BornX, monster.BornY, monster.PatrolDistance);   
             return new MoveTo(randomX, randomY);
+        }
+
+        // 主动怪巡逻
+        public static object Patrol2(Map map, MapMonster monster)
+        {
+            var Pursue = SearchInArea(map, monster);
+            if (Pursue == null)
+                return Patrol(monster);
+
+            return Pursue;
         }
 
         // 主动怪，主动搜索并返回巡逻范围内距离最近的敌人
@@ -70,6 +97,8 @@ namespace RpgMap
                     continue;
                 MapPos pos = actor.GetPos();
                 if (!MapTool.CheckDistance(monster.BornX, monster.BornY, pos.x, pos.y, monster.PatrolDistance))
+                    continue;
+                if(monster.Camp == actor.GetCamp())
                     continue;
 
                 double dis = MapTool.GetDistance(monster.PosX, monster.PosY, pos.x, pos.y);
@@ -106,7 +135,7 @@ namespace RpgMap
             int SkillID = FilterSkillID(Actor.Skills);
             if (SkillID == 0)
                 return null;
-            Actor.DoUseSkill(SkillID, pos, new List<(int, long)> { monster.TarKey });
+            //Actor.DoUseSkill(SkillID, pos, new List<(int, long)> { monster.TarKey });
             return SkillID;
         }
 

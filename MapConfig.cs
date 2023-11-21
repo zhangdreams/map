@@ -10,26 +10,26 @@ namespace RpgMap
 {
     public struct ConfigPos
     {
-        public int x { get; set; }
-        public int y { get; set; }
+        public int X { get; set; } = 0;
+        public int Y { get; set; } = 0;
         public ConfigPos(int x, int y)
         {
-            this.x = x;
-            this.y = y;
+            this.X = x;
+            this.Y = y;
         }
     }
 
     public class MapConfig
     {
         public int MapID { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int Width { get; set; }
         public int Height { get; set; }
         public int BornX { get; set; }
         public int BornY { get; set; }
         public int MaxNum { get; set; }
-        public string UnWalk { get; set; }
-        public List<ConfigPos> UnWalkList { get; set; }
+        public string UnWalk { get; set; } = string.Empty;
+        public List<ConfigPos> UnWalkList { get; set; } = new();
     }
 
     internal class MapReader
@@ -57,9 +57,9 @@ namespace RpgMap
                 string pattern = @"\(\d+,\d+\)";
                 MatchCollection matches = Regex.Matches(conf.UnWalk, pattern);
                
-                string[] coordinatePairs = conf.UnWalk.Split(',');
+                //string[] coordinatePairs = conf.UnWalk.Split(',');
                 List<ConfigPos> posList = new();
-                foreach (Match match in matches)
+                foreach (Match match in matches.Cast<Match>())
                 {
                     var coordinatePair = match.Value;
                     string cleanedPair = coordinatePair.Replace("(", "").Replace(")", "").Trim();
@@ -98,7 +98,7 @@ namespace RpgMap
                 Console.WriteLine($"UnwalkList:{c.UnWalkList.Count}");
                 Console.WriteLine($"unwalk pos:");
                 foreach (var v in c.UnWalkList)
-                    Console.Write($"{v.x},{v.y};");
+                    Console.Write($"{v.X},{v.Y};");
             }
             else
                 Console.WriteLine($"config {MapID} not found");

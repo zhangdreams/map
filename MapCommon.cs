@@ -36,13 +36,16 @@ namespace RpgMap
                     break;
                 case 0:
                     MapPos TarPos = Skill.Pos;
-                    var List = Map.Aoi.GetAoi(TarPos.x, TarPos.y);
+                    List<(int, long)> List = Map.Aoi.GetAoi(TarPos.x, TarPos.y);
+                    List<(int, long)> DList = new();
                     foreach (var t in List)
                     {
                         (int ttype, long tID) = t;
                         if ((ttype != 1 && ttype != 2) || tID == SrcActor.ID)
-                            List.Remove(t);
+                            DList.Add(t);
                     }
+                    foreach (var t in DList)
+                        List.Remove(t);
                     switch (config.DamageType)
                     {
                         case 1: // 1：单个目标

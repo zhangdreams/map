@@ -35,16 +35,18 @@ namespace RpgMap
         public MapPos Pos { get; set; } = new(0, 0, 0); // 目标位置
         public int CurWave { get; set; } // 当前技能段数
         public long SkillTime { get; set; } // 上一段技能触发时间
-        public SkillConfig SkillConfig { get; set; } // 技能配置
+        public SkillConfig SkillConfig { get; set; } = new(); // 技能配置
         public MapSkill(int actorType, long actorID, List<(int,long)> TargetMap, int skillId, MapPos pos)
         {
             ID = GetEnID();
+            ActorType = actorType;
             ActorID = actorID;
             this.TargetMap = TargetMap;
             SkillId = skillId;
             Pos = pos;
             CurWave = 0;
             SkillTime = 0;
+            SkillConfig = SkillReader.GetConfig(skillId) ?? new() ;
         }
 
         public static long GetEnID()

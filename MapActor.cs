@@ -18,12 +18,13 @@ namespace RpgMap
         public Dictionary<int, ActorSkill> Skills { get; set; } = new();
         public Map Map;
 
-        public MapActor(int Type, long ID, Prop Prop) 
+        public MapActor(int Type, long ID, Prop Prop, Map map) 
         { 
             this.Type = Type;
             this.ID = ID;
             this.Prop = Prop;
             this.BaseProp = Prop;
+            this.Map = map;
         }
 
         public bool IsAlive()
@@ -38,6 +39,21 @@ namespace RpgMap
                     return monster.IsAlive();
                 default:
                     return false;
+            }
+        }
+
+        public int GetCamp()
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    return role.Camp;
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    return monster.Camp;
+                default:
+                    return 0;
             }
         }
 
@@ -161,7 +177,7 @@ namespace RpgMap
             }
         }
 
-        public void DoStartMove(double x, double y)
+        public bool DoStartMove(double x, double y)
         {
             try
             {
@@ -182,10 +198,12 @@ namespace RpgMap
                 SetMoveState(true);
                 SetTargetPos(x, y);
                 SetPath(Path);
+                return true;
                 
             }catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                return false;
             }
         }
 
@@ -444,12 +462,14 @@ namespace RpgMap
                 SkillConfig config = SkillReader.GetConfig(SkillID) ?? throw new Exception($"can not find skill config {SkillID}");
                 long Now2 = Time.Now2();
                 if (Now2 < config.CD + Skill.UseTime)
-                    throw new Exception($"skill in cd {SkillID}");
+                    throw new Exception($"skill in cd monsterID:{ID}, {SkillID}");
 
+                Skill.UseTime = Now2;
                 MapSkill SkillEntity = new(Type, ID, TargetMap, SkillID, pos);
                 Map.AddSkillEntity(SkillEntity);
                 if(config.SBuffs.Count > 0)
                    AddBuff(config.SBuffs);
+                //Console.WriteLine($"actor ({Type},{ID}) use skill: {SkillID}");
             }
             catch (Exception e)
             {

@@ -4,17 +4,19 @@
 	"Name" : "Boss1",
 	"Level" : 10,
 	"PropID" : 2,
-	"PatrolDistance" : 15,
-	"PursueDistance" : 12,
-	"AttackDistance" : 5
+	"PatrolDistance" : 10,
+	"PursueDistance" : 8,
+	"AttackDistance" : 5,
+	"Skill" : "1"
   },
   {
 	"ID" :2,
 	"Name" : "Boss2",
 	"Level" : 15,
 	"PropID" : 3,
-	"PatrolDistance" : 15,
-	"PursueDistance" : 12,
-	"AttackDistance" : 5
+	"PatrolDistance" : 10,
+	"PursueDistance" : 8,
+	"AttackDistance" : 5,
+	"Skill" : "2"
   }
 ]

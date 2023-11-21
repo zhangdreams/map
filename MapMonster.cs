@@ -44,7 +44,7 @@ namespace RpgMap
             this.BornY = BornY;
             this.PosX = BornX;
             this.PosY = BornY;
-            this.doing.Add(new Idle());
+            // this.doing.Add(new Idle());
             // todo
         }
 
@@ -65,8 +65,8 @@ namespace RpgMap
         
         public void SetTargetPos(double PosX, double PosY)
         {
-            this.PosX = PosX;
-            this.PosY = PosY;
+            this.TargetX = PosX;
+            this.TargetY = PosY;
         }
 
         public void SetPath(List<Node> Path)
@@ -81,10 +81,13 @@ namespace RpgMap
 
         public void StopMove()
         {
+            // Console.WriteLine($"{ID} StopMove");
             this.IsMoving = false;
             this.TargetX = 0;
             this.TargetY = 0;
             this.Path.Clear();
+            if ( this.doing.Count > 0 && this.doing[0] is MoveTo)
+                this.doing.RemoveAt(0);
         }
 
         // 加血
@@ -107,6 +110,7 @@ namespace RpgMap
                 if(t == 0 && i == 0)    // 如果有目标暂时不切换
                     TarKey = (SrcType, SrcActorID);
             }
+            // Console.WriteLine($"monser dec hp {HP}， dec:{Dec}");
             if (HP <= 0)
                 OnDead();
             return HP;

@@ -19,7 +19,7 @@
 	"Name" : "skill2",
 	"AttackParam" : 2,
 	"AttackDistance" : 8,
-	"CD" : 5000,
+	"CD" : 3000,
 	"Type" : 0,
 	"TotalWave" : 2,
 	"WaveInterval" : "300",

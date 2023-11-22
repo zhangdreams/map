@@ -84,6 +84,7 @@ namespace RpgMap
                 else
                 {
                     LoopTick200 += 1;
+                    LoopMonsterDead(Now2);
                     // todo 200ms 轮询的可以放一些在这里处理，平衡一下压力
                 }
 
@@ -93,6 +94,7 @@ namespace RpgMap
                     LoopTick3000 = 1;
                     ShowDict();
                 }
+                LastTickTime = Now2;
             }
             catch(Exception e)
             {
@@ -306,6 +308,7 @@ namespace RpgMap
                         if (TActor == null)  // 追击目标不存在了
                         {
                             doingList.Remove(doing);
+                            monster.TarKey = (0, 0);
                             continue;
                         }
                         MapPos pos = TActor.GetPos();
@@ -313,17 +316,26 @@ namespace RpgMap
                         if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance) || !TActor.IsAlive())
                         {
                             doingList.Remove(doing);
+                            monster.TarKey = (0, 0);
                             MoveTo moveto = MonsterAI.ReturnBorn(monster);  // 回出生点
                             DoMoveTo(Actor, moveto, ref doingList);
                         }
-                        // 位置可能更新
-                        if (Math.Round(pos.x) != Math.Round(to.X) && Math.Round(pos.y) != Math.Round(to.Y))
+
+                        // 到达攻击距离
+                        if (MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
+                            monster.StopMove();
+                        else
                         {
-                            to.X = pos.x; 
-                            to.Y = pos.y;
-                            monster.TargetX = pos.x;
-                            monster.TargetY = pos.y;
+                            // 位置可能更新
+                            if (Math.Round(pos.x) != Math.Round(to.X) && Math.Round(pos.y) != Math.Round(to.Y))
+                            {
+                                to.X = pos.x;
+                                to.Y = pos.y;
+                                monster.TargetX = pos.x;
+                                monster.TargetY = pos.y;
+                            }
                         }
+
 
                         //if (Math.Round(monster.PosX) == Math.Round(to.X) && Math.Round(monster.PosY) == Math.Round(to.Y))
                         //{
@@ -332,6 +344,8 @@ namespace RpgMap
                         //}
                     }
                     else if (Actor.IsArrival())
+                        doingList.Remove(doing);
+                    else if (!monster.GetMoveState())
                         doingList.Remove(doing);
                     continue;
                 }
@@ -351,6 +365,13 @@ namespace RpgMap
                     if (TActor == null)  // 追击目标不存在了
                     {
                         doingList.Remove(doing);
+                        monster.TarKey = (0, 0);
+                        continue;
+                    }
+                    if (!TActor.IsAlive())
+                    {
+                        doingList.Remove(doing);
+                        monster.TarKey = (0, 0);
                         continue;
                     }
 
@@ -421,8 +442,37 @@ namespace RpgMap
             }
         }
 
+        public void LoopMonsterDead(long Now2)
+        {
+            try
+            {
+                foreach (var monster in Monsters.Values)
+                {
+                    var config = MonsterReader.GetConfig(monster.MonsterID);
+                    if(monster.State == 0 && config.RebornTime > 0)
+                        monster.LoopDead(Now2, config.RebornTime);
+                }    
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
         public void ShowDict()
         {
+            string ShowModel = MapMgr.show;
+            switch (ShowModel)
+            {
+                case "1":
+                    ShowBoss(1001);
+                    return;
+                case "2":
+                    ShowBoss(1002);
+                    return;
+                default:
+                    break;
+            }
             // Console.WriteLine($"monster number : {MonsterNum}");
             int n = 1;
             foreach(var monster in Monsters.Values)
@@ -433,24 +483,39 @@ namespace RpgMap
                     continue;
                 }
                 Console.WriteLine($"monster ({n++}) :");
-                Console.WriteLine($"     ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
-                //Console.WriteLine($"doingList {monster.doing.Count} curDoing:{monster.doing[0]}");
-                //var doing = monster.doing[0];
-                //if (doing is MoveTo to)
-                //{
-                //    Console.WriteLine($"move to targetX:{monster.TargetX}, targetY:{monster.TargetY}");
-                //    to.Show();
-                //}
+                Console.WriteLine($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
+                Console.WriteLine($"  doingList {monster.doing.Count} curDoing:{monster.doing[0]}; target:{monster.TarKey}");
+         
                 (double, double) p = (0,0);
                 lastPos.TryGetValue(monster.MonsterID, out p);
                 (double X, double Y) = p;
                 bool print = monster.doing[0] is MoveTo;
                 if (X == monster.PosX && Y == monster.PosY && print)
                 {
+                    Console.WriteLine($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
                     foreach (var doing in monster.doing)
-                        Console.WriteLine($"monster state {doing}, {monster.GetMoveState()}, {monster.TargetX}, {monster.TargetY}");
+                        Console.WriteLine($"monster doing {doing}");
                 }
                 lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
+            }
+        }
+
+        public void ShowBoss(long ID)
+        {
+            Monsters.TryGetValue(ID, out var monster);
+            if (monster == null)
+            {
+                Console.WriteLine($"could not find monster : {ID}");
+                return;
+            }
+            Console.WriteLine($"monster Target Pos {monster.TargetX},{monster.TargetY}; isMoving:{monster.GetMoveState()}, target:{monster.TarKey}");
+            foreach(var d in monster.doing)
+            {
+                Console.WriteLine($"doing : {d}");
+                if (d is MoveTo to)
+                    to.Show();
+                else if(d is Pursue pursue) 
+                    pursue.Show();
             }
         }
     }

@@ -18,6 +18,7 @@ namespace RpgMap
         public int AttackDistance { get; set; } // 攻击距离
         public string Skill { get; set; } = string.Empty;
         public List<int> Skills = new();
+        public int RebornTime { get; set; } // 复活时间
     }
 
     internal class MonsterReader

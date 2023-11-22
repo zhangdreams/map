@@ -15,7 +15,7 @@ namespace RpgMap
         public int G { get; set; } = 0;  // 从起始节点到当前节点的代价
         public int H { get; set; } = 0;  // 启发式函数值
         public int F { get { return G + H; } }  // 评估函数值
-        public Node Parent { get; set; }
+        public Node Parent { get; set; }    // 父节点
 
         public Node(int x, int y)
         {

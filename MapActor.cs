@@ -147,8 +147,14 @@ namespace RpgMap
                 case 2:
                     MapMonster monster = Map.Monsters[ID];
                     ret = monster.Moving(upTime);
+                    if (MapMgr.show == "m")
+                    {
+                        Console.WriteLine($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.Path.Count}");
+                    }
                     if (IsArrival())
                     {
+                        if (MapMgr.show == "m")
+                            Console.WriteLine($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
                         if (monster.Path.Count <= 0)
                             DoStopMove();
                         else
@@ -190,7 +196,6 @@ namespace RpgMap
                     throw new Exception($"pos is unvalid x={x},y={y}");
                 }
                 // todo 判断能否移动 一些状态的判断
-
                 MapPos Pos = GetPos();
                 Node Start = new((int)Pos.x, (int)Pos.y);
                 Node Goal = new ((int)x, (int)y);

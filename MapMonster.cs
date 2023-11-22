@@ -32,6 +32,7 @@ namespace RpgMap
         public double PursueDistance { get; set; } = 3; // 追击半径
         public double AttackDistance { get; set; } = 1; // 攻击距离
         public (int, long) TarKey;  // 攻击目标
+        public long DeadTime { get; set; } = 0; // 复活时间
 
         public MapMonster(long ID, int MonsterID, string Name, int Speed, int Camp, double BornX, double BornY)
         {
@@ -108,7 +109,10 @@ namespace RpgMap
                 HP = Math.Max(HP - Dec, 0);
                 (int t, long i) = TarKey;
                 if(t == 0 && i == 0)    // 如果有目标暂时不切换
+                {
                     TarKey = (SrcType, SrcActorID);
+                    doing.Insert(0, new Fight());
+                }
             }
             // Console.WriteLine($"monser dec hp {HP}， dec:{Dec}");
             if (HP <= 0)
@@ -121,13 +125,22 @@ namespace RpgMap
         {
             State = 1;
             HP = MaxHp;
-            // 可能改变位置
+            DeadTime = 0;
+            Console.WriteLine($"monster reborn {ID}");
+            // 出生点复活
+            PosX = BornX;
+            PosY = BornY;
         }
 
         // 死亡事件
         public void OnDead()
         {
             State = 0;
+            DeadTime = Time.Now2();
+            IsMoving = false;
+            Path.Clear();
+            doing.RemoveAt(0);
+            Console.WriteLine($"monster dead {ID}");
             // todo
         }
 
@@ -138,6 +151,12 @@ namespace RpgMap
             PosX = NewX;
             PosY = NewY;
             return (NewX, NewY);
+        }
+
+        public void LoopDead(long Now2, int rebornTime)
+        {
+            if(State == 0 && Now2 >= DeadTime + rebornTime * 1000)
+                Reborn();
         }
 
         // 移动到下一个路径点

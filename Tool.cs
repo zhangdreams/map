@@ -25,8 +25,8 @@ namespace RpgMap
         public static (double, double) CalcMovingPos(double X, double Y, double X2, double Y2, int speed, int millSec)
         {
             double distance = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
-            int totalTime = (int)distance / speed * 1000;   // 按ms计算
-            if(totalTime <= 0)
+            double totalTime = distance / speed * 1000;   // 按ms计算
+            if (totalTime <= 0)
                 return (X2, Y2);
             double X3 = X + (X2 - X) * (millSec / totalTime);
             double Y3 = Y + (Y2 - Y) * (millSec / totalTime);

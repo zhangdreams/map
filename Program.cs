@@ -38,7 +38,10 @@ namespace RpgMap
             //Console.WriteLine($"Prop Attack value:{prop.Speed}");
 
 
-            Console.ReadLine();
+            while (MapMgr.show != "c")
+            {
+                MapMgr.show = Console.ReadLine() ?? "n";
+            }
         }
 
         public static void BossEnterMap(int mapid)

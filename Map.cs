@@ -400,7 +400,7 @@ namespace RpgMap
                 Monsters.Remove(ID);
         }
 
-        public void DoMoveTo(MapActor Actor, MoveTo moveto, ref ArrayList doingList)
+        public static void DoMoveTo(MapActor Actor, MoveTo moveto, ref ArrayList doingList)
         {
             if (Actor.DoStartMove(moveto.X, moveto.Y))
                 doingList.Insert(0, moveto);

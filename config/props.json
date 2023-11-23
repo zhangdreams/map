@@ -1,8 +1,8 @@
 [
   {
 	"Index" :1,
-	"MaxHp" : 1500,
-	"Attack" : 30,
+	"MaxHp" : 1200,
+	"Attack" : 70,
 	"Defense" : 40,
 	"Speed" : 30
   },

@@ -28,13 +28,22 @@ namespace RpgMap
             List<MapEffect> Effects = new();
             Prop SrcProp = SrcActor.Prop;
             Prop TarProp = TarActor.Prop;
-            if (TarActor.HasBuff(BuffType.god) || IsMiss(SrcActor, SrcProp, TarActor, TarProp))    //检查miss和无敌
+            //检查miss和无敌
+            if (TarActor.HasBuff(BuffType.god))    
+            {
+                Effects.Add(new(TarActor.Type, TarActor.ID, 3, 0));
                 return Effects;
+            }
+            if (IsMiss(SrcActor, SrcProp, TarActor, TarProp))
+                return Effects;
+
             // todo 一系列计算,这里先简单计算
-            int Damage = (int)(SrcProp.Attack * config.AttackParam) - TarProp.Defense;
+            Random r = new();
+            int rate = r.Next(90, 110);
+            int Damage = Math.Max((int)((SrcProp.Attack * config.AttackParam - TarProp.Defense) * rate / 100), 0);
             TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
 
-            //Console.WriteLine($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} damage:{Damage}");
+            Console.WriteLine($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} damage:{Damage}");
             MapEffect Effect = new(TarActor.Type, TarActor.ID, 1, Damage);
             Effects.Add(Effect);
 

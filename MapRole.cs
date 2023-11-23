@@ -19,6 +19,7 @@ namespace RpgMap
         public List<Node> Path { get; set; } = new();    // 寻路路径
         public double TargetX { get; set; } = 0;  // 移动的目标坐标点
         public double TargetY { get; set; } = 0;
+        public Map map;
 
         //public string Buffs;
         public MapRole(long ID, string Name, int Speed, int Camp)
@@ -27,6 +28,7 @@ namespace RpgMap
             this.Name = Name;
             this.Speed = Speed;
             this.Camp = Camp;
+            map = null;
             // List<Node> path = AStar.FindPath(startNode, goalNode);
             // todo
         }

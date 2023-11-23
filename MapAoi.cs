@@ -102,6 +102,12 @@ namespace RpgMap
         }
 
         // 进入某一个格子
+        public void EnterArea(int Type, long ID, double X, double Y)
+        {
+            int GrideX = (int)X / GrideLength;
+            int GrideY = (int)Y / GrideWidth;
+            EnterArea(Type, ID, GrideX, GrideY);
+        }
         private void EnterArea(int Type, long ID, int GrideX, int GrideY)
         {
             var key = (GrideX, GrideY);
@@ -112,6 +118,12 @@ namespace RpgMap
         }
 
         // 离开某个格子
+        public void ExitArea(int Type, long ID, double X, double Y)
+        {
+            int GrideX = (int)X / GrideLength;
+            int GrideY = (int)Y / GrideWidth;
+            ExitArea(Type, ID, GrideX, GrideY);
+        }
         private void ExitArea(int Type, long ID, int GrideX, int GrideY)
         {
             var key = (GrideX, GrideY);

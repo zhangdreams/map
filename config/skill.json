@@ -4,7 +4,7 @@
 	"Name" : "skill1",
 	"AttackParam" : 1.5,
 	"AttackDistance" : 8,
-	"CD" : 1000,
+	"CD" : 2000,
 	"Type" : 1,
 	"TotalWave" : 1,
 	"WaveInterval" : "0",

@@ -37,6 +37,7 @@ namespace RpgMap
                 case 0:
                     MapPos TarPos = Skill.Pos;
                     List<(int, long)> List = Map.Aoi.GetAoi(TarPos.x, TarPos.y);
+                    
                     List<(int, long)> DList = new();
                     foreach (var t in List)
                     {
@@ -46,6 +47,11 @@ namespace RpgMap
                     }
                     foreach (var t in DList)
                         List.Remove(t);
+                    //if (Skill.SkillId == 2 && List.Count <= 0)
+                    //{
+                    //    foreach(var t in DList)
+                    //        Console.WriteLine($"Filter Hurt remove key {t}");
+                    //}
                     switch (config.DamageType)
                     {
                         case 1: // 1：单个目标
@@ -54,7 +60,7 @@ namespace RpgMap
                         case 2: // 2：圆形范围
                             if (config.Ranges.Count < 1) // 配置错误
                                 return HurtMap;
-                            HurtMap = FilterHurt2(Map, Skill, SrcPos, config.Ranges[0], List);
+                            HurtMap = FilterHurt2(Map, Skill, TarPos, config.Ranges[0], List);
                             break;
                         case 3: // 3：扇形范围
                             if (config.Ranges.Count < 2)    // 配置错误
@@ -64,7 +70,7 @@ namespace RpgMap
                             foreach (var hurt in List)
                             {
                                 var TarActor = MapCommon.GetActor(Map, hurt);
-                                if (TarActor != null && MapTool.InSector(SrcPos, TarActor.GetPos(), an, r))
+                                if (TarActor != null && MapTool.InSector(TarPos, TarActor.GetPos(), an, r))
                                 {
                                     HurtMap[hurt] = TarActor;
                                     if (HurtMap.Count >= config.TargetNum)
@@ -84,9 +90,13 @@ namespace RpgMap
         {
             Dictionary<(int, long), MapActor> HurtMap = new();
             SkillConfig config = Skill.SkillConfig;
+            //if (Skill.SkillId == 2)
+            //    Console.WriteLine($"List count: {List.Count}");
             foreach (var Hurt in List)
             {
                 var TarActor = MapCommon.GetActor(Map, Hurt);
+                //if (Skill.SkillId == 2)
+                //    Console.WriteLine($"distance:{Distance}, hurt:{Hurt} distance 2:{MapTool.GetDistance(SrcPos, TarActor.GetPos())}");
                 if (TarActor != null && MapTool.CheckDistance(SrcPos, TarActor.GetPos(), Distance))
                 {
                     HurtMap[Hurt] = TarActor;

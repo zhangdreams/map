@@ -33,6 +33,7 @@ namespace RpgMap
         public double AttackDistance { get; set; } = 1; // 攻击距离
         public (int, long) TarKey;  // 攻击目标
         public long DeadTime { get; set; } = 0; // 复活时间
+        public Map map;
 
         public MapMonster(long ID, int MonsterID, string Name, int Speed, int Camp, double BornX, double BornY)
         {
@@ -45,6 +46,7 @@ namespace RpgMap
             this.BornY = BornY;
             this.PosX = BornX;
             this.PosY = BornY;
+            map = null;
             // this.doing.Add(new Idle());
             // todo
         }
@@ -128,6 +130,7 @@ namespace RpgMap
             DeadTime = 0;
             Console.WriteLine($"monster reborn {ID}");
             // 出生点复活
+            map.Aoi.DoMove(2, ID, PosX, PosY, BornX, BornY);
             PosX = BornX;
             PosY = BornY;
         }
@@ -139,7 +142,8 @@ namespace RpgMap
             DeadTime = Time.Now2();
             IsMoving = false;
             Path.Clear();
-            doing.RemoveAt(0);
+            if (doing.Count > 0)
+                doing.RemoveAt(0);
             Console.WriteLine($"monster dead {ID}");
             // todo
         }

@@ -74,6 +74,7 @@ namespace RpgMap
                     AttackDistance = config.AttackDistance,
                 };
                 monster.doing.Add(new Patrol2());
+                monster.map = map;
                 Dictionary<int, ActorSkill> skills = new();
                 int skillPos = 1;
                 foreach (var sid in config.Skills)

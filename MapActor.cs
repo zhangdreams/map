@@ -474,7 +474,7 @@ namespace RpgMap
                 Map.AddSkillEntity(SkillEntity);
                 if(config.SBuffs.Count > 0)
                    AddBuff(config.SBuffs);
-                //Console.WriteLine($"actor ({Type},{ID}) use skill: {SkillID}");
+                Console.WriteLine($"actor ({Type},{ID}) use skill: {SkillID} pos:{(int)pos.x},{(int)pos.y}");
             }
             catch (Exception e)
             {

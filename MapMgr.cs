@@ -11,7 +11,7 @@ namespace RpgMap
     {
         public static Dictionary<string, Map> mapDic = new();
         private static int MapID = 0;
-        public static string show { get; set; } = "n";
+        public static string show { get; set; } = "";
 
         public MapMgr() { }
 

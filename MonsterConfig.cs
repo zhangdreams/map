@@ -55,20 +55,20 @@ namespace RpgMap
             var config = GetConfig(ID);
             if (config != null)
             {
-                Console.WriteLine($"ID: {config.ID}");
-                Console.WriteLine($"Name: {config.Name}");
-                Console.WriteLine($"Level: {config.Level}");
-                Console.WriteLine($"PropID: {config.PropID}");
-                Console.WriteLine($"Patrol Distance: {config.PatrolDistance}");
-                Console.WriteLine($"Pursue Distance: {config.PursueDistance}");
-                Console.WriteLine($"Attack Distance: {config.AttackDistance}");
+                Log.R($"ID: {config.ID}");
+                Log.R($"Name: {config.Name}");
+                Log.R($"Level: {config.Level}");
+                Log.R($"PropID: {config.PropID}");
+                Log.R($"Patrol Distance: {config.PatrolDistance}");
+                Log.R($"Pursue Distance: {config.PursueDistance}");
+                Log.R($"Attack Distance: {config.AttackDistance}");
                 Console.Write($"Skills : ");
                 foreach (var Sid in config.Skills)
                     Console.Write($"{Sid} ,");
-                Console.WriteLine();
+                Log.P();
             }
             else
-                Console.WriteLine($"config {ID} not found");
+                Log.E($"config {ID} not found");
         }
     }
 }

@@ -61,7 +61,6 @@ namespace RpgMap
             LastTickTime = Time.Now2();
             // 增加一个轮询
             Timer cTimer = new (MapLoop, null, 0, 100);
-
         }
 
         private void MapLoop(object? state)
@@ -98,7 +97,7 @@ namespace RpgMap
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
 
@@ -107,7 +106,7 @@ namespace RpgMap
         {
 
             var config = MapReader.GetConfig(MapID);
-            Random r = new();
+            Random r = MapMgr.random;
             int PosX = r.Next(Math.Max(config.BornX-3, 0), Math.Min(config.BornX+3, config.Width));
             int PosY = r.Next(Math.Max(config.BornY-3, 0), Math.Min(config.BornY+3, config.Height));
             MapRole.PosX = PosX;
@@ -183,7 +182,7 @@ namespace RpgMap
                 LoopMoving2(Now2);
             }catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
         public void LoopMoving2(long Now2)
@@ -215,7 +214,7 @@ namespace RpgMap
                 LoopSkills2(Now2);
             }catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
         public void LoopSkills2(long Now2)
@@ -278,7 +277,7 @@ namespace RpgMap
                 LoopMonsterAI2(Now2);
             }catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
         public void LoopMonsterAI2(long Now2)
@@ -460,7 +459,7 @@ namespace RpgMap
                 }
             }catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
 
@@ -477,7 +476,7 @@ namespace RpgMap
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
         }
 
@@ -494,21 +493,25 @@ namespace RpgMap
                     return;
                 case "n":
                     break;
+                case "r":
+                    Log.P($"loop show dict");
+                    return;
                 default:
                     return;
             }
-            // Console.WriteLine($"monster number : {MonsterNum}");
+            // Log.P($"monster number : {MonsterNum}");
             int n = 1;
             foreach(var monster in Monsters.Values)
             {
                 if(!monster.IsAlive())
                 {
-                    Console.WriteLine($"mosnter ({n}) has dead");
+                    Log.E($"monster ({n}) has dead");
                     continue;
                 }
-                Console.WriteLine($"monster ({n++}) :");
-                Console.WriteLine($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
-                Console.WriteLine($"  doingList {monster.doing.Count} curDoing:{monster.doing[0]}; target:{monster.TarKey}");
+                Log.P($"monster ({n++}) :");
+                Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
+                Log.W($"  doingList {monster.doing.Count} curDoing:{monster.doing[0]}; target:{monster.TarKey}");
+                Log.P();
          
                 (double, double) p = (0,0);
                 lastPos.TryGetValue(monster.MonsterID, out p);
@@ -516,12 +519,13 @@ namespace RpgMap
                 bool print = monster.doing[0] is MoveTo;
                 if (X == monster.PosX && Y == monster.PosY && print)
                 {
-                    Console.WriteLine($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
+                    Log.R($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
                     foreach (var doing in monster.doing)
-                        Console.WriteLine($"monster doing {doing}");
+                        Log.R($"monster doing {doing}");
                 }
                 lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
             }
+            Log.P();
         }
 
         public void ShowBoss(long ID)
@@ -529,13 +533,13 @@ namespace RpgMap
             Monsters.TryGetValue(ID, out var monster);
             if (monster == null)
             {
-                Console.WriteLine($"could not find monster : {ID}");
+                Log.E($"could not find monster : {ID}");
                 return;
             }
-            Console.WriteLine($"monster Target Pos {(int)monster.TargetX},{(int)monster.TargetY}; isMoving:{monster.GetMoveState()}, target:{monster.TarKey}");
+            Log.P($"monster Target Pos {(int)monster.TargetX},{(int)monster.TargetY}; isMoving:{monster.GetMoveState()}, target:{monster.TarKey}");
             foreach(var d in monster.doing)
             {
-                Console.WriteLine($"doing : {d}");
+                Log.P($"doing : {d}");
                 if (d is MoveTo to)
                     to.Show();
                 else if(d is Pursue pursue) 

@@ -73,7 +73,7 @@ namespace RpgMap
                         }
                     }
                 }
-                Console.WriteLine($"posList:{posList.Count}");
+                Log.P($"posList:{posList.Count}");
                 conf.UnWalkList = posList;
                 mapConfigs[conf.MapID] = conf;
             }
@@ -88,20 +88,20 @@ namespace RpgMap
             var c = GetConfig(MapID);
             if (c != null)
             {
-                Console.WriteLine($"ID: {c.MapID}");
-                Console.WriteLine($"Name: {c.Name}");
-                Console.WriteLine($"Width: {c.Width}");
-                Console.WriteLine($"Height: {c.Height}");
-                Console.WriteLine($"BornX: {c.BornX}");
-                Console.WriteLine($"BornY: {c.BornY}");
-                Console.WriteLine($"MaxNum: {c.MaxNum}");
-                Console.WriteLine($"UnwalkList:{c.UnWalkList.Count}");
-                Console.WriteLine($"unwalk pos:");
+                Log.R($"ID: {c.MapID}");
+                Log.R($"Name: {c.Name}");
+                Log.R($"Width: {c.Width}");
+                Log.R($"Height: {c.Height}");
+                Log.R($"BornX: {c.BornX}");
+                Log.R($"BornY: {c.BornY}");
+                Log.R($"MaxNum: {c.MaxNum}");
+                Log.R($"UnwalkList:{c.UnWalkList.Count}");
+                Log.R($"unwalk pos:");
                 foreach (var v in c.UnWalkList)
                     Console.Write($"{v.X},{v.Y};");
             }
             else
-                Console.WriteLine($"config {MapID} not found");
+                Log.E($"config {MapID} not found");
         }
     }
 }

@@ -49,7 +49,7 @@ namespace RpgMap
             }
             else
             {
-                Console.WriteLine($"Set Field '{fieldName}' not found in type '{type.Name}'.");
+                Log.E($"Set Field '{fieldName}' not found in type '{type.Name}'.");
             }
         }
 
@@ -61,11 +61,48 @@ namespace RpgMap
                 return fieldInfo.GetValue(obj);
             else
             {
-                Console.WriteLine($"Get Field '{fieldName}' not found in type '{type.Name}'.");
+                Log.E($"Get Field '{fieldName}' not found in type '{type.Name}'.");
                 return null;
             }
-
         }
     }
 
+    internal class Log
+    {
+        public static void P()
+        {
+            Show("");
+        }
+        public static void P(string msg) 
+        { 
+            Console.ResetColor();
+            Show(msg);
+        }
+
+        public static void R(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Show(msg);
+        }
+
+        public static void W(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Show(msg);
+        }
+
+        public static void E(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Show(msg);
+        }
+
+        public static void Show(string msg)
+        {
+            if (msg == "")
+                Console.WriteLine(msg);
+            else
+                Console.WriteLine($"{DateTimeOffset.Now} " + msg);
+        }
+    }
 }

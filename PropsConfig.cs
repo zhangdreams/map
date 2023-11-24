@@ -36,14 +36,14 @@ namespace RpgMap
             var config = GetConfig(index);
             if (config != null)
             {
-                Console.WriteLine($"Index: {config.Index}");
-                Console.WriteLine($"MaxHp: {config.MaxHp}");
-                Console.WriteLine($"Attack: {config.Attack}");
-                Console.WriteLine($"Defense: {config.Defense}");
-                Console.WriteLine($"Speed: {config.Speed}");
+                Log.R($"Index: {config.Index}");
+                Log.R($"MaxHp: {config.MaxHp}");
+                Log.R($"Attack: {config.Attack}");
+                Log.R($"Defense: {config.Defense}");
+                Log.R($"Speed: {config.Speed}");
             }
             else
-                Console.WriteLine($"config {index} not found");
+                Log.E($"config {index} not found");
         }
     }
 }

@@ -11,15 +11,19 @@ namespace RpgMap
     {
         public static Dictionary<string, Map> mapDic = new();
         private static int MapID = 0;
+        public static Random random = new((int)DateTime.Now.Ticks);
         public static string show { get; set; } = "";
 
-        public MapMgr() { }
+        public MapMgr() 
+        {
+            //SetTimer();
+        }
 
         public static Map? CreateMap(int mapID, string mapName)
         {
             if (mapDic.ContainsKey(mapName))
             {
-                Console.WriteLine($"exist Map MapID:{mapID}, mapName:{mapName}");
+                Log.E($"exist Map MapID:{mapID}, mapName:{mapName}");
                 return null;
             }
             int ID = GetMapID();
@@ -44,11 +48,26 @@ namespace RpgMap
             return MapID++;
         }
 
+        //public void SetTimer()
+        //{
+        //    Timer MTimer = new (MapMonitor, null, 0, 60000);
+        //}
+
+        //public static void MapMonitor(object? o)
+        //{
+        //    Log.P($"monitor check {mapDic.Count}");
+        //    foreach(var map in mapDic.Values)
+        //    {
+        //        if (!map.thread.IsAlive)
+        //            Log.E("map thread exit");
+        //    }
+        //}
+
         public static void ShowDict()
         {
             foreach (var map in mapDic.Values) 
             { 
-                Console.WriteLine($"Map ID:{map.ID}, MapID:{map.MapID},MapName:{map.MapName},CreateTime:{map.CreateTime}"); 
+                Log.R($"Map ID:{map.ID}, MapID:{map.MapID},MapName:{map.MapName},CreateTime:{map.CreateTime}"); 
             }
         }
         

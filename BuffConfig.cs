@@ -53,15 +53,15 @@ namespace RpgMap
             var config = GetConfig(BuffID);
             if (config != null)
             {
-                Console.WriteLine($"BuffID: {config.BuffID}");
-                Console.WriteLine($"Name: {config.Name}");
-                Console.WriteLine($"Type: {config.Type}");
-                Console.WriteLine($"DurTime: {config.DurTime}");
-                Console.WriteLine($"Level: {config.Level}");
-                Console.WriteLine($"EffectType: {config.EffectType}");
-                Console.WriteLine($"Value: {config.Value}");
-                Console.WriteLine($"Func: {config.Func}");
-            }
+                Log.P($"BuffID: {config.BuffID}");
+                Log.R($"Name: {config.Name}");
+                Log.R($"Type: {config.Type}");
+                Log.R($"DurTime: {config.DurTime}");
+                Log.R($"Level: {config.Level}");
+                Log.R($"EffectType: {config.EffectType}");
+                Log.R($"Value: {config.Value}");
+                Log.R($"Func: {config.Func}");
+            }   
         }
     }
 }

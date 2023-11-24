@@ -74,22 +74,22 @@ namespace RpgMap
             var config = GetConfig(SkillID);
             if(config != null)
             {
-                Console.WriteLine($"skillID:{config.SkillID}");
-                Console.WriteLine($"Name:{config.Name}");
-                Console.WriteLine($"AttackParam:{config.AttackParam}");
-                Console.WriteLine($"AttackDistance:{config.AttackDistance}");
-                Console.WriteLine($"CD:{config.CD}");
-                Console.WriteLine($"Type:{config.Type}");
-                Console.WriteLine($"TotalWave:{config.TotalWave}");
-                Console.WriteLine($"DamageType:{config.DamageType}");
-                Console.WriteLine($"Waves:{string.Join(",", config.Waves)}");
-                Console.WriteLine($"Ranges:{string.Join(",", config.Ranges)}");
-                Console.WriteLine($"SBuffs:{string.Join(",", config.SBuffs)}");
-                Console.WriteLine($"TBuffs:{string.Join(",", config.TBuffs)}");
-                Console.WriteLine();
+                Log.R($"skillID:{config.SkillID}");
+                Log.R($"Name:{config.Name}");
+                Log.R($"AttackParam:{config.AttackParam}");
+                Log.R($"AttackDistance:{config.AttackDistance}");
+                Log.R($"CD:{config.CD}");
+                Log.R($"Type:{config.Type}");
+                Log.R($"TotalWave:{config.TotalWave}");
+                Log.R($"DamageType:{config.DamageType}");
+                Log.R($"Waves:{string.Join(",", config.Waves)}");
+                Log.R($"Ranges:{string.Join(",", config.Ranges)}");
+                Log.R($"SBuffs:{string.Join(",", config.SBuffs)}");
+                Log.R($"TBuffs:{string.Join(",", config.TBuffs)}");
+                Log.P();
             }
             else
-                Console.WriteLine($"config {SkillID} not found");
+                Log.R($"config {SkillID} not found");
         }
     }
 }

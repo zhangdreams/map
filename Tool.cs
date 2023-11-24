@@ -97,7 +97,7 @@ namespace RpgMap
         }
         private static double RandomDouble(double minValue, double maxValue)
         {
-            Random random = new ();
+            Random random = MapMgr.random;
             return minValue + (maxValue - minValue) * random.NextDouble();
         }
     }

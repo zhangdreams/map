@@ -38,12 +38,13 @@ namespace RpgMap
                 return Effects;
 
             // todo 一系列计算,这里先简单计算
-            Random r = new();
+            Random r = MapMgr.random;
             int rate = r.Next(90, 110);
             int Damage = Math.Max((int)((SrcProp.Attack * config.AttackParam - TarProp.Defense) * rate / 100), 0);
             TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
 
-            Console.WriteLine($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} damage:{Damage}");
+            Log.R($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} skill {config.SkillID} damage:{Damage}");
+            Log.P();
             MapEffect Effect = new(TarActor.Type, TarActor.ID, 1, Damage);
             Effects.Add(Effect);
 

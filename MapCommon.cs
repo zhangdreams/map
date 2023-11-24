@@ -50,7 +50,7 @@ namespace RpgMap
                     //if (Skill.SkillId == 2 && List.Count <= 0)
                     //{
                     //    foreach(var t in DList)
-                    //        Console.WriteLine($"Filter Hurt remove key {t}");
+                    //        Log.P($"Filter Hurt remove key {t}");
                     //}
                     switch (config.DamageType)
                     {
@@ -91,12 +91,12 @@ namespace RpgMap
             Dictionary<(int, long), MapActor> HurtMap = new();
             SkillConfig config = Skill.SkillConfig;
             //if (Skill.SkillId == 2)
-            //    Console.WriteLine($"List count: {List.Count}");
+            //    Log.P($"List count: {List.Count}");
             foreach (var Hurt in List)
             {
                 var TarActor = MapCommon.GetActor(Map, Hurt);
                 //if (Skill.SkillId == 2)
-                //    Console.WriteLine($"distance:{Distance}, hurt:{Hurt} distance 2:{MapTool.GetDistance(SrcPos, TarActor.GetPos())}");
+                //    Log.P($"distance:{Distance}, hurt:{Hurt} distance 2:{MapTool.GetDistance(SrcPos, TarActor.GetPos())}");
                 if (TarActor != null && MapTool.CheckDistance(SrcPos, TarActor.GetPos(), Distance))
                 {
                     HurtMap[Hurt] = TarActor;

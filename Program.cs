@@ -16,26 +16,26 @@ namespace RpgMap
             PropReader.Read();
             MonsterReader.Read();
             stopwatch.Stop();
-            Console.WriteLine($"load config, {stopwatch.ElapsedMilliseconds}");
+            Log.P($"load config, {stopwatch.ElapsedMilliseconds}");
 
             // 地图创建
-            Console.WriteLine("start map mgr");
+            Log.P("start map mgr");
             _ = new MapMgr();
             var IDList = MapReader.GetMapIDs();
             foreach (var MapId in IDList)
             {
                 string mapName = MapTool.GetNormalName(MapId);
-                Console.WriteLine($"start create map:{MapId},{mapName}");
+                Log.P($"start create map:{MapId},{mapName}");
                 MapMgr.CreateMap(MapId, mapName);
             }
             MapMgr.ShowDict();
             BossEnterMap(1);
 
             //Prop prop = new();
-            //Console.WriteLine($"attack value :{Common.GetFieldValue(prop, "Attack")}");
+            //Log.P($"attack value :{Common.GetFieldValue(prop, "Attack")}");
             //Common.SetFieldValue(prop, "Speed", 200);
-            //Console.WriteLine($"Prop Attack value:{prop.Attack}");
-            //Console.WriteLine($"Prop Attack value:{prop.Speed}");
+            //Log.P($"Prop Attack value:{prop.Attack}");
+            //Log.P($"Prop Attack value:{prop.Speed}");
 
 
             while (MapMgr.show != "c")
@@ -50,7 +50,7 @@ namespace RpgMap
             var map = MapMgr.GetMap(mapName);
             if (map == null)
             {
-                Console.WriteLine($"cannot find the map mapid:{mapid} mapName:{mapName}");
+                Log.E($"cannot find the map mapid:{mapid} mapName:{mapName}");
                 return;
             }
             List<int> IDs = MonsterReader.GetMonsterIDs();
@@ -62,7 +62,7 @@ namespace RpgMap
                 var prop = PropReader.GetConfig(config.PropID);
                 if (prop == null)
                 {
-                    Console.WriteLine($"cannot find the prop propid:{config.PropID}, monsterID:{ID}");
+                    Log.E($"cannot find the prop propid:{config.PropID}, monsterID:{ID}");
                     continue;
                 }
                 MapMonster monster = new(MID, ID, config.Name, prop.Speed, camp, 10 * camp, 10 * camp)

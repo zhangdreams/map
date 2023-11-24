@@ -29,7 +29,7 @@ namespace RpgMap
         }
         public readonly void Show()
         {
-            Console.WriteLine($"moveto X：{X}, Y:{Y}");
+            Log.R($"moveto X：{X}, Y:{Y}");
         }
     }
     // 追击
@@ -43,7 +43,7 @@ namespace RpgMap
 
         public readonly void Show()
         {
-            Console.WriteLine($"pursue key : {Key}");
+            Log.R($"pursue key : {Key}");
         }
     }
 
@@ -126,7 +126,7 @@ namespace RpgMap
             {
                 monster.TarKey = (0, 0);
                 monster.doing.RemoveAt(0);
-                Console.WriteLine($"target dead remove fight doing:{monster.doing.Count}, {monster.doing[0]}");
+                Log.W($"target dead remove fight doing:{monster.doing.Count}, {monster.doing[0]}");
                 return null;
             }
             

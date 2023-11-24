@@ -84,7 +84,7 @@ namespace RpgMap
 
         public void StopMove()
         {
-            // Console.WriteLine($"{ID} StopMove");
+            // Log.P($"{ID} StopMove");
             this.IsMoving = false;
             this.TargetX = 0;
             this.TargetY = 0;
@@ -116,7 +116,7 @@ namespace RpgMap
                     doing.Insert(0, new Fight());
                 }
             }
-            // Console.WriteLine($"monser dec hp {HP}， dec:{Dec}");
+            // Log.P($"monser dec hp {HP}， dec:{Dec}");
             if (HP <= 0)
                 OnDead();
             return HP;
@@ -128,7 +128,7 @@ namespace RpgMap
             State = 1;
             HP = MaxHp;
             DeadTime = 0;
-            Console.WriteLine($"monster reborn {ID}");
+            Log.E($"monster reborn {ID}");
             // 出生点复活
             map.Aoi.DoMove(2, ID, PosX, PosY, BornX, BornY);
             PosX = BornX;
@@ -144,7 +144,7 @@ namespace RpgMap
             Path.Clear();
             if (doing.Count > 0)
                 doing.RemoveAt(0);
-            Console.WriteLine($"monster dead {ID}");
+            Log.E($"monster dead {ID}");
             // todo
         }
 

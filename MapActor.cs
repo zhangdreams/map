@@ -149,12 +149,12 @@ namespace RpgMap
                     ret = monster.Moving(upTime);
                     if (MapMgr.show == "m")
                     {
-                        Console.WriteLine($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.Path.Count}");
+                        Log.W($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.Path.Count}");
                     }
                     if (IsArrival())
                     {
                         if (MapMgr.show == "m")
-                            Console.WriteLine($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
+                            Log.W($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
                         if (monster.Path.Count <= 0)
                             DoStopMove();
                         else
@@ -207,7 +207,7 @@ namespace RpgMap
                 
             }catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Log.E(ex.ToString());
                 return false;
             }
         }
@@ -289,7 +289,7 @@ namespace RpgMap
                     Buff.Value = (Buff.Value <0 && value < 0) ? Math.Min(value, Buff.Value) : Math.Max(value, Buff.Value);
                     break;
                 default:
-                    Console.WriteLine($"unhandle buff addtype: {config.AddType} buffid: {BuffID}");
+                    Log.E($"unhandle buff addtype: {config.AddType} buffid: {BuffID}");
                     break;
             }
             return Buff;
@@ -306,7 +306,7 @@ namespace RpgMap
                 case 2: // 效果类
                     break;
                 default:
-                    Console.WriteLine($"unhandle buff effect Type :{config.EffectType}, buffid:{buff.BuffID}");
+                    Log.E($"unhandle buff effect Type :{config.EffectType}, buffid:{buff.BuffID}");
                     break;
             }
         }
@@ -474,11 +474,11 @@ namespace RpgMap
                 Map.AddSkillEntity(SkillEntity);
                 if(config.SBuffs.Count > 0)
                    AddBuff(config.SBuffs);
-                Console.WriteLine($"actor ({Type},{ID}) use skill: {SkillID} pos:{(int)pos.x},{(int)pos.y}");
+                Log.W($"actor ({Type},{ID}) use skill: {SkillID} enID:{SkillEntity.ID} pos:{(int)pos.x},{(int)pos.y}");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Log.E(e.ToString());
             }
                     
         }

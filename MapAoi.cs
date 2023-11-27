@@ -22,11 +22,12 @@ namespace RpgMap
             this.Width = Width;
             int GrideLen = (int)Length / GrideLength;
             int GrideWid = (int)Width / GrideWidth;
-            for (int i = 0; i < GrideLen; i++)
+            for (int i = 0; i <= GrideLen; i++)
             {
-                for (int j = 0; j < GrideWid; j++)
+                for (int j = 0; j <= GrideWid; j++)
                 {
                     List<(int, long)> values = new();
+                    // Log.R($"aoi gride key {(i,j)}");
                     Grides[(i, j)] = values;
                 }
             }
@@ -48,6 +49,7 @@ namespace RpgMap
         {
             if (!Grides.ContainsKey(key))
             {
+                Log.E($"not found gride {key}");
                 List<(int, long)> values = new();
                 return values;
             }
@@ -111,7 +113,7 @@ namespace RpgMap
         private void EnterArea(int Type, long ID, int GrideX, int GrideY)
         {
             var key = (GrideX, GrideY);
-            List<(int, long)> list = Grides[key];
+            List<(int, long)> list = GetGride(GrideX, GrideY);
             var v = (Type, ID);
             if(!list.Contains(v))
                 list.Add(v);
@@ -126,8 +128,7 @@ namespace RpgMap
         }
         private void ExitArea(int Type, long ID, int GrideX, int GrideY)
         {
-            var key = (GrideX, GrideY);
-            List<(int, long)> list = Grides[key];
+            List<(int, long)> list = GetGride(GrideX, GrideY);
             var v = (Type, ID);
             list.Remove(v);
         }

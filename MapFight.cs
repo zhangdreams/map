@@ -31,6 +31,7 @@ namespace RpgMap
             //检查miss和无敌
             if (TarActor.HasBuff(BuffType.god))    
             {
+                Log.R($"target has god {(TarActor.Type, TarActor.ID)}");
                 Effects.Add(new(TarActor.Type, TarActor.ID, 3, 0));
                 return Effects;
             }

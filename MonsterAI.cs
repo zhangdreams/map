@@ -53,6 +53,12 @@ namespace RpgMap
         public static void Show() { }
     }
 
+    internal struct Patrol
+    {
+        public Patrol() { }
+        public static void Show() { }
+    }
+
     internal struct Patrol2
     {
         public Patrol2() { }

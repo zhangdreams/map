@@ -33,6 +33,24 @@ namespace RpgMap
             // todo
         }
 
+        public void SetProp(string key, object value)
+        {
+            switch (key)
+            {
+                case "MaxHp":
+                    int add = (int)((long)value - MaxHp);
+                    MaxHp = (long)value;
+                    AddHp(add);
+                    break;
+                case "Speed":
+                    Speed = (int)value;
+                    break;
+                default:
+                    Log.E($"MapMonster set prop unhandle key {key}");
+                    break;
+            }
+        }
+
         public bool IsAlive()
         {
             return State == 1;

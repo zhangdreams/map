@@ -93,7 +93,7 @@ namespace RpgMap
             double randomAngle = RandomDouble(0, 2 * Math.PI);
             double randomX = BornX + randomRadius * Math.Cos(randomAngle);
             double randomY = BornY + randomRadius * Math.Sin(randomAngle);
-            return (randomX, randomY);
+            return (Math.Max(0, randomX), Math.Max(randomY, 0));
         }
         private static double RandomDouble(double minValue, double maxValue)
         {

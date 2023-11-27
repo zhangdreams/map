@@ -51,6 +51,24 @@ namespace RpgMap
             // todo
         }
 
+        public void SetProp(string key, object value)
+        {
+            switch (key)
+            {
+                case "MaxHp":
+                    int add = (int)((long)value - MaxHp);
+                    MaxHp = (long)value;
+                    AddHp(add);
+                    break;
+                case "Speed":
+                    Speed = (int)value;
+                    break;
+                default:
+                    Log.E($"MapMonster set prop unhandle key {key}");
+                    break;
+            }
+        }
+
         public bool IsAlive()
         {
             return State == 1;
@@ -154,6 +172,8 @@ namespace RpgMap
             (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
             PosX = NewX;
             PosY = NewY;
+            if(PosX == TargetX && PosY == TargetY)
+                Log.E($"arrive target pos {ID}, new pos {(NewX, NewY)}, path count {Path.Count}");
             return (NewX, NewY);
         }
 

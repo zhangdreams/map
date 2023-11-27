@@ -19,5 +19,13 @@ namespace RpgMap
 
         }
 
+        public void Show()
+        {
+            Log.R($"prop.HP : {HP}");
+            Log.R($"prop.MaxHp : {MaxHp}");
+            Log.R($"prop.Attack : {Attack}");
+            Log.R($"prop.Defense : {Defense}");
+            Log.R($"prop.Speed : {Speed}");
+        }
     }
 }

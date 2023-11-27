@@ -42,6 +42,23 @@ namespace RpgMap
             }
         }
 
+        public void SetActorProp(string key, object NewValue)
+        {
+            switch (Type)
+            {
+                case 1:
+                    MapRole role = Map.Roles[ID];
+                    role.SetProp(key, NewValue);
+                    break;
+                case 2:
+                    MapMonster monster = Map.Monsters[ID];
+                    monster.SetProp(key, NewValue);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public int GetCamp()
         {
             switch (Type)
@@ -229,6 +246,27 @@ namespace RpgMap
             }
         }
 
+        // 来自技能的buff
+        public void AddSkillBuff(List<int> buffList)
+        {
+            switch(buffList.Count)
+            {
+                case 1: 
+                    int BuffID = buffList[0];
+                    AddBuff(BuffID);
+                    break;
+                case 2: // 概率添加
+                    BuffID = buffList[0];
+                    int rate = buffList[1];
+                    if(MapMgr.random.Next(10000) <= rate)
+                        AddBuff(BuffID);
+                    break;
+                default:
+                    Log.E($"unhandle buff param count {buffList.Count}");
+                    break;
+            }
+        }
+
         // 添加buff 
         // durTime buff持续时间
         // value buff效果值
@@ -237,14 +275,8 @@ namespace RpgMap
             var config = BuffReader.GetConfig(buffID);
             if (config == null)
                 return;
+            Log.R($"add buff ActorID {ID}, buff {buffID}, {config.Value}");
             AddBuff(buffID, config.DurTime, config.Value);
-        }
-        public void AddBuff(List<int> buffList)
-        {
-            foreach(int buffID in buffList)
-            {
-                AddBuff(buffID);
-            }
         }
         public void AddBuff(int buffID, int durTime)
         {
@@ -330,8 +362,15 @@ namespace RpgMap
                 if (NewAdd <= OldAdd)
                     return;
             }
-            BuffProps[buff.BuffID] = NewAdd;
-            Common.SetFieldValue(Prop, config.Func, Math.Max(0, (int)OldValue + (NewAdd - OldAdd)));
+            BuffProps[buff.BuffID] = (int)((int)OldValue * ((double)NewAdd - OldAdd) / 10000);
+            object NewValue;
+            if(config.Func == "MaxHp" || config.Func == "HP")
+                NewValue = Math.Max(0, (long)((long)OldValue * (1 + ((double)NewAdd - OldAdd) / 10000)));
+            else
+                NewValue = Math.Max(0, (int)((int)OldValue * (1 + ((double)NewAdd - OldAdd) / 10000)));
+            Common.SetFieldValue(Prop, config.Func, NewValue);
+            if (config.Func == "MaxHp" || config.Func == "Speed")
+                SetActorProp(config.Func, NewValue);
         }
 
         public void DelBuff(int BuffID)
@@ -342,6 +381,7 @@ namespace RpgMap
                 BuffProps.Remove(BuffID);
                 DelBuffChangeProp(BuffID, Add);
             }
+            Log.R($"del buff ActorID {ID}, buff {BuffID}");
             // todo 可能会有些效果要触发
         }
 
@@ -352,7 +392,14 @@ namespace RpgMap
                 return;
             var OldValue = Common.GetFieldValue(Prop, config.Func);
             OldValue ??= 0;
-            Common.SetFieldValue(Prop, config.Func, Math.Max(0, (int)OldValue - Add));
+            object NewValue;
+            if (config.Func == "MaxHp" || config.Func == "HP")
+                NewValue = Math.Max(0, (long)OldValue - Add);
+            else
+                NewValue = Math.Max(0, (int)OldValue - Add);
+            Common.SetFieldValue(Prop, config.Func, NewValue);
+            if (config.Func == "MaxHp" || config.Func == "Speed")
+                SetActorProp(config.Func, NewValue);
 
         }
 
@@ -473,7 +520,7 @@ namespace RpgMap
                 MapSkill SkillEntity = new(Type, ID, TargetMap, SkillID, pos);
                 Map.AddSkillEntity(SkillEntity);
                 if(config.SBuffs.Count > 0)
-                   AddBuff(config.SBuffs);
+                    AddSkillBuff(config.SBuffs);
                 Log.W($"actor ({Type},{ID}) use skill: {SkillID} enID:{SkillEntity.ID} pos:{(int)pos.x},{(int)pos.y}");
             }
             catch (Exception e)

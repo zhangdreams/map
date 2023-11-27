@@ -73,7 +73,7 @@ namespace RpgMap
                     PursueDistance = config.PatrolDistance,
                     AttackDistance = config.AttackDistance,
                 };
-                monster.doing.Add(new Patrol2());
+                monster.doing.Add(new Patrol());
                 monster.map = map;
                 Dictionary<int, ActorSkill> skills = new();
                 int skillPos = 1;

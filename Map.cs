@@ -203,6 +203,8 @@ namespace RpgMap
         public void AddSkillEntity(MapSkill Skill)
         {
             SkillList.Add(Skill);
+            if (SkillList.Count % 100 == 0)
+                Log.E($"to much skill entity {SkillList.Count}");
             // 视野同步
         }
 
@@ -255,7 +257,7 @@ namespace RpgMap
                         foreach (var TarEffect in EffectMaps)
                         {
                             var TActor = MapCommon.GetActor(this, (TarEffect.ActorType, TarEffect.ActorID));
-                            TActor.AddBuff(config.TBuffs);
+                            TActor.AddSkillBuff(config.TBuffs);
                         }
                     }
                     EffectMaps.AddRange(Effects);
@@ -359,6 +361,11 @@ namespace RpgMap
                     else if (!monster.GetMoveState())
                         doingList.Remove(doing);
                     continue;
+                }
+                else if(doing is Patrol)
+                {
+                    MoveTo moveto = MonsterAI.Patrol(monster);
+                    DoMoveTo(Actor, moveto, ref doingList);
                 }
                 else if(doing is Patrol2)
                 {
@@ -510,8 +517,7 @@ namespace RpgMap
                 }
                 Log.P($"monster ({n++}) :");
                 Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
-                Log.W($"  doingList {monster.doing.Count} curDoing:{monster.doing[0]}; target:{monster.TarKey}");
-                Log.P();
+                Log.W($"  doingList {monster.doing.Count} curDoing:{ShowDoing(monster.doing[0])}; target:{monster.TarKey}");
          
                 (double, double) p = (0,0);
                 lastPos.TryGetValue(monster.MonsterID, out p);
@@ -540,11 +546,24 @@ namespace RpgMap
             foreach(var d in monster.doing)
             {
                 Log.P($"doing : {d}");
-                if (d is MoveTo to)
-                    to.Show();
-                else if(d is Pursue pursue) 
-                    pursue.Show();
+                ShowDoing(d);
             }
+        }
+
+        public static object? ShowDoing(object doing)
+        {
+            switch(doing)
+            {
+                case MoveTo moveto:
+                    moveto.Show();
+                    break;
+                case Pursue pursue:
+                    pursue.Show();
+                    break;
+                default: 
+                    break;
+            }
+            return doing;
         }
     }
 }

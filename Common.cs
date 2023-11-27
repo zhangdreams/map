@@ -71,7 +71,8 @@ namespace RpgMap
     {
         public static void P()
         {
-            Show("");
+            Console.WriteLine();
+            //Show("");
         }
         public static void P(string msg) 
         { 

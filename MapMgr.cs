@@ -10,7 +10,8 @@ namespace RpgMap
     internal class MapMgr
     {
         public static Dictionary<string, Map> mapDic = new();
-        private static int MapID = 0;
+        public static Dictionary<int, List<Map>> mapList = new();
+        //private static int MapID = 0;
         public static Random random = new((int)DateTime.Now.Ticks);
         public static string show { get; set; } = "";
 
@@ -19,18 +20,49 @@ namespace RpgMap
             //SetTimer();
         }
 
+        public static Map CreateMap(int mapID)
+        {
+            string mapName = MapTool.GetNormalName(mapID);
+            int line = 0;
+            if (mapDic.ContainsKey(mapName))
+            {
+                line = GetMapLine(mapID);
+                mapName = MapTool.GetNormalName(mapID, line);
+            }
+            return CreateMap(mapID, mapName, line);
+
+        }
         public static Map? CreateMap(int mapID, string mapName)
+        {
+            return CreateMap(mapID, mapName, 0);
+        }
+        public static Map? CreateMap(int mapID, string mapName, int line)
         {
             if (mapDic.ContainsKey(mapName))
             {
                 Log.E($"exist Map MapID:{mapID}, mapName:{mapName}");
                 return null;
             }
-            int ID = GetMapID();
-            //var map = Map.NewMap(ID, MapID, mapName);
-            Map map = new(ID, mapID, mapName);
+            //int ID = GetMapID();
+            Map map = new(mapID, mapName, line);
             mapDic[mapName] = map;
+
+            mapList.TryGetValue(mapID, out List<Map> list);
+            list ??= new();
+            list.Add(map);
+            mapList[mapID] = list;
             return map;
+        }
+
+        // 返回一个可用的分线
+        public static int GetMapLine(int mapID)
+        {
+            List<Map> list = new();
+            mapList.TryGetValue(mapID, out list);
+            int line = 0;
+            foreach(Map m in list)
+                line = Math.Max(line, m.Line);
+            return line + 1;
         }
 
         // 根据地图名返回一个地图对象
@@ -40,13 +72,39 @@ namespace RpgMap
                 return mapDic[mapName];
             return null;
         }
-
-        private static int GetMapID()
+        // 返回一个可以进入的地图
+        // 有可进入的则直接返回，没有则新创建一个地图
+        public static Map GetMap(int mapID)
         {
-            if (MapID >= int.MaxValue)
-                MapID = 1;
-            return MapID++;
+            var config = MapReader.GetConfig(mapID);
+            List<Map> list = new();
+            mapList.TryGetValue(mapID, out list);
+            foreach (Map map in list)
+            {
+                if (map.RoleNum < config.MaxNum)
+                    return map;
+            }
+            return CreateMap(mapID);
         }
+
+        public static void DelMap(Map map)
+        {
+            mapDic.Remove(map.MapName);
+            List<Map> list = new();
+            mapList.TryGetValue(map.MapID, out list);
+            list.Remove(map);
+            if (list.Count > 0)
+                mapList[map.MapID] = list;
+            else
+                mapList.Remove(map.MapID);
+        }
+
+        //private static int GetMapID()
+        //{
+        //    if (MapID >= int.MaxValue)
+        //        MapID = 1;
+        //    return MapID++;
+        //}
 
         //public void SetTimer()
         //{
@@ -67,7 +125,7 @@ namespace RpgMap
         {
             foreach (var map in mapDic.Values) 
             { 
-                Log.R($"Map ID:{map.ID}, MapID:{map.MapID},MapName:{map.MapName},CreateTime:{map.CreateTime}"); 
+                Log.R($"Map ID:{map.MapID},MapName:{map.MapName},CreateTime:{map.CreateTime}"); 
             }
         }
         

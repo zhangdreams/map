@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RpgMap
@@ -14,9 +15,9 @@ namespace RpgMap
         {
             return $"normal_map_{mapID}";
         }
-        public static string GetNormalName(int mapID, int roleID)
+        public static string GetNormalName(int mapID, int line)
         {
-            return $"single_map_{mapID}_{roleID}";
+            return $"single_map_{mapID}_{line}";
         }
 
         // 用于移动更新位置
@@ -26,7 +27,7 @@ namespace RpgMap
         {
             double distance = Math.Sqrt(Math.Pow(X2 - X, 2) + Math.Pow(Y2 - Y, 2));
             double totalTime = distance / speed * 1000;   // 按ms计算
-            if (totalTime <= 0)
+            if (totalTime <= 0 || totalTime <= millSec)
                 return (X2, Y2);
             double X3 = X + (X2 - X) * (millSec / totalTime);
             double Y3 = Y + (Y2 - Y) * (millSec / totalTime);
@@ -85,15 +86,16 @@ namespace RpgMap
 
         // 返回一个出生点为中心，半径R内的一个巡逻点
         // 一般怪物的巡逻范围不会太大，这里不考虑寻路问题
-        public static (double, double) GetPatrolPos(double BornX, double BornY, double r)
+        public static (double, double) GetPatrolPos(int MapID, double BornX, double BornY, double r)
         {
+            var config = MapReader.GetConfig(MapID);
             // 生成随机半径
             double randomRadius = r * Math.Sqrt(RandomDouble(0, 1));
             // 生成随机角度（弧度）
             double randomAngle = RandomDouble(0, 2 * Math.PI);
             double randomX = BornX + randomRadius * Math.Cos(randomAngle);
             double randomY = BornY + randomRadius * Math.Sin(randomAngle);
-            return (Math.Max(0, randomX), Math.Max(randomY, 0));
+            return (Math.Max(0, Math.Min(randomX, config.Width)), Math.Max(0, Math.Min(randomY, config.Height)));
         }
         private static double RandomDouble(double minValue, double maxValue)
         {

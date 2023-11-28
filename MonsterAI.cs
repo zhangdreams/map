@@ -76,7 +76,7 @@ namespace RpgMap
         // 被动怪巡逻
         public static MoveTo Patrol(MapMonster monster)
         {
-            (double randomX, double randomY) = MapTool.GetPatrolPos(monster.BornX, monster.BornY, monster.PatrolDistance);   
+            (double randomX, double randomY) = MapTool.GetPatrolPos(monster.map.MapID, monster.BornX, monster.BornY, monster.PatrolDistance);   
             return new MoveTo(randomX, randomY);
         }
 

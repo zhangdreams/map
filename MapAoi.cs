@@ -112,7 +112,7 @@ namespace RpgMap
         }
         private void EnterArea(int Type, long ID, int GrideX, int GrideY)
         {
-            var key = (GrideX, GrideY);
+            //var key = (GrideX, GrideY);
             List<(int, long)> list = GetGride(GrideX, GrideY);
             var v = (Type, ID);
             if(!list.Contains(v))

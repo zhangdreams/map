@@ -226,7 +226,7 @@ namespace RpgMap
             int mapWidth = config.Width; 
             int mapHeight = config.Height;
 
-            return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
+            return x >= 0 && x <= mapWidth && y >= 0 && y <= mapHeight;
         }
 
         public static bool IsObstacle(int MapID, int x, int y)

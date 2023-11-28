@@ -15,9 +15,10 @@ namespace RpgMap
 {
     internal class Map
     {
-        public int ID { get; set; } = 0;    // id
+        //public int ID { get; set; } = 0;    // id
         public int MapID { get; set; } = 0; // 地图ID
         public string MapName { get; set; } = ""; // 地图名（常用来索引）
+        public int Line { get; set; } = 0;  // 分线
         public int MapType { get; set; } = 0; // 地图类型
         public long CreateTime { get; set; } = 0; // 地图创建时间
 
@@ -33,27 +34,32 @@ namespace RpgMap
         public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
         public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
+        public long MaxMonsterID { get; set; } = 0;   // 地图内怪物的最大实例ID
+        public int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
+        public Timer Timer;
         public int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
         public int LoopTick5000 { get; set; } = 1;
 
         public static Dictionary<long, (double, double)> lastPos = new();
 
-        public Map(int id, int mapID, string mapName) 
+        public Map(int mapID, string mapName, int line) 
         {
-            this.ID = id;
+            //this.ID = id;
             this.MapID = mapID;
             this.MapName = mapName;
+            this.Line = line;
             CreateTime = Time.Now();
             MapType = 1;
 
             // 创建线程
-            Thread thread = new (InitMap);
+            Thread thread = new(InitMap);
             thread.Start();
             this.thread = thread;
 
             var config = MapReader.GetConfig(mapID);
             // 初始化AOI
             this.Aoi = new(config.Width, config.Height);
+            Log.P($"create new map {mapID}, mapname:{mapName}");
         }
 
         public void InitMap()
@@ -61,6 +67,7 @@ namespace RpgMap
             LastTickTime = Time.Now2();
             // 增加一个轮询
             Timer cTimer = new (MapLoop, null, 0, 100);
+            Timer = cTimer;
         }
 
         private void MapLoop(object? state)
@@ -101,6 +108,16 @@ namespace RpgMap
             }
         }
 
+        public long GetMaxMonsterID()
+        {
+            return MaxMonsterID++;
+        }
+
+        public int getMaxCamp()
+        {
+            return MaxCamp++;
+        }
+
         // 玩家进入地图
         public void DoRoleEnter(MapRole MapRole, MapActor MapActor)
         {
@@ -128,13 +145,19 @@ namespace RpgMap
             RoleNum --;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(1, RoleID, pos.x, pos.y);
-            // todo
+            if (RoleNum == 0 && Line > 0)  
+            {
+                Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                Timer.Dispose();
+                MapMgr.DelMap(this);
+            }
         }
 
         public void DoMonsterEnter(MapMonster monster, MapActor MapActor)
         {
             Monsters[monster.ID] = monster;
             MonsterNum ++;
+            RoleNum ++; // todo 这里暂时把怪物当做玩家计数
             ActorMap[(2, MapActor.ID)] = MapActor;
             Aoi.EnterArea(2, monster.ID, monster.PosX, monster.PosY);
         }
@@ -148,6 +171,7 @@ namespace RpgMap
             MonsterNum --;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(2, MonsterID, pos.x, pos.y);
+            DoRoleExit(MonsterID);  // todo 这里暂时把怪物当做玩家计数
         }
 
         public long DoAddHP(int ActorType, long ActorID, int Add)
@@ -550,7 +574,7 @@ namespace RpgMap
             }
         }
 
-        public static object? ShowDoing(object doing)
+        public static object ShowDoing(object doing)
         {
             switch(doing)
             {

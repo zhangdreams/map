@@ -15,7 +15,7 @@ namespace RpgMap
         public int Level { get; set; } = 0; // 等级
         public long HP { get; set; } = 0;   // 当前血量
         public long MaxHp { get; set; } = 0;    // 最大血量
-        public int Speed { get; set; } = 0; // 移动速度
+        public int Speed { get; set; } = 0; // 移动速度 m/s
         public int Camp { get; set; } = 0;   // 阵营
         public int State { get; set; } = 1; // 状态 0死亡 1正常
         public double PosX { get; set; } = 0;   // 当前坐标
@@ -172,8 +172,6 @@ namespace RpgMap
             (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
             PosX = NewX;
             PosY = NewY;
-            if(PosX == TargetX && PosY == TargetY)
-                Log.E($"arrive target pos {ID}, new pos {(NewX, NewY)}, path count {Path.Count}");
             return (NewX, NewY);
         }
 

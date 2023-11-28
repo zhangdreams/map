@@ -13,7 +13,7 @@ namespace RpgMap
         public long MaxHp { get; set; } = 0;
         public int Attack { get; set; } = 0;
         public int Defense {  get; set; } = 0;
-        public int Speed { get; set; } = 0;
+        public int Speed { get; set; } = 0; // m/s
         public Prop() 
         {
 

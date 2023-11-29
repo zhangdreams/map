@@ -46,7 +46,6 @@ namespace RpgMap
             this.BornY = BornY;
             this.PosX = BornX;
             this.PosY = BornY;
-            map = null;
             // this.doing.Add(new Idle());
             // todo
         }

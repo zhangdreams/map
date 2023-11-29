@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace RpgMap
         public Prop Prop { get; set; } = new(); // 属性
         public Prop BaseProp { get; set; } = new(); // 刚进地图保存的属性
         public Dictionary<int, MapBuff> Buffs { get; set; } = new();
-        public Dictionary<int, int> BuffProps { get; set; } = new();    // 用于保存buff修改的属性，方便buff删除时清除属性
+        public Dictionary<int, long> BuffProps { get; set; } = new();    // 用于保存buff修改的属性，方便buff删除时清除属性
         public Dictionary<int, ActorSkill> Skills { get; set; } = new();
         public Map Map;
 
@@ -216,7 +217,7 @@ namespace RpgMap
                 MapPos Pos = GetPos();
                 Node Start = new((int)Pos.x, (int)Pos.y);
                 Node Goal = new ((int)x, (int)y);
-                var Path = MapPath.FindPath(Map.MapID, Start, Goal) ?? throw new Exception($"can move to pos x={x},y={y}");
+                var Path = MapPath.FindPath(Map.MapID, Start, Goal) ?? throw new Exception($"can not move to pos {(Map.MapName,ID)} x={x},y={y}, curpos {(Start.X, Start.Y)}");
                 SetMoveState(true);
                 SetTargetPos(x, y);
                 SetPath(Path);
@@ -333,7 +334,7 @@ namespace RpgMap
             switch(config.EffectType)
             {
                 case 1: // 属性改变
-                    AddBuffChangeProp(buff, config);
+                    AddBuffChangeRateProp(buff, config);
                     break;
                 case 2: // 效果类
                     break;
@@ -342,41 +343,66 @@ namespace RpgMap
                     break;
             }
         }
-        public void AddBuffChangeProp(MapBuff buff, BuffConfig config)
+        public void AddBuffChangeRateProp(MapBuff buff, BuffConfig config)
         {
             if (config.Func == "")
                 return;
-            BuffProps.TryGetValue(buff.BuffID, out int OldAdd);
-            var OldValue = Common.GetFieldValue(Prop, config.Func);
-            OldValue ??= 0;
-            int NewAdd;
-            if (OldAdd < 0 && buff.Value < 0)
-            {
-                NewAdd = Math.Min(OldAdd, buff.Value);
-                if (NewAdd >= OldAdd)
-                    return;
-            }
+            var OldValue = Common.GetFieldValue(Prop, config.Func) ?? 0;
+            var BaseValue = Common.GetFieldValue(BaseProp, config.Func) ?? 0;
+            object? NewValue;
+            if (config.Func == "MaxHp" || config.Func == "HP")
+                NewValue = AddProp(buff, (long)OldValue, (long)BaseValue);
             else
-            {
-                NewAdd = Math.Max(OldAdd, buff.Value);
-                if (NewAdd <= OldAdd)
-                    return;
-            }
-            BuffProps[buff.BuffID] = (int)((int)OldValue * ((double)NewAdd - OldAdd) / 10000);
-            object NewValue;
-            if(config.Func == "MaxHp" || config.Func == "HP")
-                NewValue = Math.Max(0, (long)((long)OldValue * (1 + ((double)NewAdd - OldAdd) / 10000)));
-            else
-                NewValue = Math.Max(0, (int)((int)OldValue * (1 + ((double)NewAdd - OldAdd) / 10000)));
+                NewValue = AddProp(buff, (int)OldValue, (int)BaseValue);
+            if (NewValue == null)
+                return;
             Common.SetFieldValue(Prop, config.Func, NewValue);
+            //Log.R($"change rate prop {ID},oldvalue:{OldValue}, NewValue:{NewValue}");
             if (config.Func == "MaxHp" || config.Func == "Speed")
                 SetActorProp(config.Func, NewValue);
+        }
+
+        public object? AddProp(MapBuff buff, long OldValue, long BaseValue)
+        {
+            BuffProps.TryGetValue(buff.BuffID, out long OldAdd);
+            long NewAdd = (long)((long)BaseValue * ((double)buff.Value / 10000)); 
+            if (OldAdd < 0 && buff.Value < 0)
+            {
+                if (NewAdd >= OldAdd)
+                    return null;
+            }
+            else
+            {
+                if (NewAdd <= OldAdd)
+                    return null;
+            }
+            long NewValue = Math.Max(0, OldValue + (NewAdd - OldAdd));
+            BuffProps[buff.BuffID] = NewAdd;
+            return NewValue;
+        }
+        public object? AddProp(MapBuff buff, int OldValue, int BaseValue)
+        {
+            BuffProps.TryGetValue(buff.BuffID, out long OldAdd);
+            int NewAdd = (int)((int)BaseValue * ((int)buff.Value / 10000));
+            if (OldAdd < 0 && buff.Value < 0)
+            {
+                if (NewAdd >= OldAdd)
+                    return null;
+            }
+            else
+            {
+                if (NewAdd <= OldAdd)
+                    return null;
+            }
+            int NewValue = Math.Max(0, OldValue + (NewAdd - (int)OldAdd));
+            BuffProps[buff.BuffID] = NewAdd;
+            return NewValue;
         }
 
         public void DelBuff(int BuffID)
         {
             Buffs.Remove(BuffID);
-            if(BuffProps.TryGetValue(BuffID, out int Add))
+            if(BuffProps.TryGetValue(BuffID, out long Add))
             {
                 BuffProps.Remove(BuffID);
                 DelBuffChangeProp(BuffID, Add);
@@ -385,7 +411,7 @@ namespace RpgMap
             // todo 可能会有些效果要触发
         }
 
-        public void DelBuffChangeProp(int BuffID, int Add)
+        public void DelBuffChangeProp(int BuffID, long Add)
         {
             var config = BuffReader.GetConfig(BuffID);
             if (config.Func == "")

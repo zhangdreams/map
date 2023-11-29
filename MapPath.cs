@@ -51,37 +51,38 @@ namespace RpgMap
                 for (int i = 1; i < openSet.Count; i++)
                 {
                     if (openSet[i].F < current.F || (openSet[i].F == current.F && openSet[i].H < current.H))
-                    {
                         current = openSet[i];
-                    }
                 }
 
                 openSet.Remove(current);
                 closedSet.Add(current);
 
                 if (current.Arrival(goal))
-                {
                     return ReconstructPath(current);
-                }
 
-                int step = 1;
-                if(!neighborMaps.ContainsKey((current.X,current.Y)))
+                if (!neighborMaps.TryGetValue((current.X, current.Y), out int step))
                 {
+                    step = 1;
                     neighborMaps[(current.X, current.Y)] = 1;
-                }else
-                {
-                    step = neighborMaps[(current.X, current.Y)];
-                    neighborMaps[(current.X, current.Y)] = step + 1;
                 }
+                else
+                    neighborMaps[(current.X, current.Y)] = step + 1;
+
+                //int step = 1;
+                //if (!neighborMaps.ContainsKey((current.X,current.Y)))
+                //    neighborMaps[(current.X, current.Y)] = 1;
+                //else
+                //{
+                //    step = neighborMaps[(current.X, current.Y)];
+                //    neighborMaps[(current.X, current.Y)] = step + 1;
+                //}
                 List<Node> Neighbors = GetNeighbors(MapID, current, step);
                 if (Neighbors.Count <= 0)
                     return null;
                 foreach (Node neighbor in Neighbors)
                 {
                     if (closedSet.Contains(neighbor))
-                    {
                         continue;
-                    }
 
                     int tentativeG = current.G + CalculateDistance(MapID, current, neighbor);
                     if (!openSet.Contains(neighbor) || tentativeG < neighbor.G)
@@ -90,9 +91,7 @@ namespace RpgMap
                         neighbor.G = tentativeG;
                         neighbor.H = CalculateDistance(MapID, neighbor, goal);
                         if (!openSet.Contains(neighbor))
-                        {
                             openSet.Add(neighbor);
-                        }
                     }
                 }
             }
@@ -126,9 +125,7 @@ namespace RpgMap
                 Node newNode = new (newX, newY);
                 // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
                 if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY) && !ContainsObstacleBetween(MapID, node, newNode))
-                {
                     neighbors.Add(newNode);
-                }
 
             }
             // 效率较低
@@ -172,9 +169,7 @@ namespace RpgMap
 
             int distance = (int)(Math.Sqrt(dx * dx + dy * dy) * 10);
             if(ContainsObstacleBetween(MapID, a, b))
-            {
                 distance *= 5;
-            }
 
             return distance;
         }
@@ -185,20 +180,17 @@ namespace RpgMap
             int dx = Math.Abs(end.X - start.X);
             int dy = Math.Abs(end.Y - start.Y);
 
-            int x = start.X;
-            int y = start.Y;
-
             int xIncrement = (start.X < end.X) ? 1 : -1;
             int yIncrement = (start.Y < end.Y) ? 1 : -1;
 
+            int x = start.X;
+            int y = start.Y;
             int error = dx - dy;
 
             while (x != end.X || y != end.Y)
             {
-                if (IsObstacle(MapID, x, y))
-                {
-                    return true; // 发现障碍物
-                }
+                if (IsObstacle(MapID, x, y) && x != start.X && y != start.Y)
+                    return true;
 
                 int doubleError = error * 2;
 
@@ -214,7 +206,6 @@ namespace RpgMap
                     y += yIncrement;
                 }
             }
-
             return false; // 没有发现障碍物
         }
 

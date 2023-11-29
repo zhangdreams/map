@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace RpgMap
 {
@@ -13,7 +14,7 @@ namespace RpgMap
         // 返回地图名（暂未考虑分线情况）
         public static string GetNormalName(int mapID)
         {
-            return $"normal_map_{mapID}";
+            return $"normal_map_{mapID}_0";
         }
         public static string GetNormalName(int mapID, int line)
         {
@@ -88,6 +89,12 @@ namespace RpgMap
         // 一般怪物的巡逻范围不会太大，这里不考虑寻路问题
         public static (double, double) GetPatrolPos(int MapID, double BornX, double BornY, double r)
         {
+            return GetPatrolPos(MapID, BornX, BornY, r, 5);
+        }
+        public static (double, double) GetPatrolPos(int MapID, double BornX, double BornY, double r, int times)
+        {
+            if(times <= 0) 
+                return(BornX, BornY);
             var config = MapReader.GetConfig(MapID);
             // 生成随机半径
             double randomRadius = r * Math.Sqrt(RandomDouble(0, 1));
@@ -95,8 +102,14 @@ namespace RpgMap
             double randomAngle = RandomDouble(0, 2 * Math.PI);
             double randomX = BornX + randomRadius * Math.Cos(randomAngle);
             double randomY = BornY + randomRadius * Math.Sin(randomAngle);
-            return (Math.Max(0, Math.Min(randomX, config.Width)), Math.Max(0, Math.Min(randomY, config.Height)));
+
+            randomX = Math.Max(0, Math.Min(randomX, config.Width));
+            randomY = Math.Max(0, Math.Min(randomY, config.Height));
+            if (!MapPath.IsObstacle(MapID, (int)randomX, (int)randomY))
+                return (randomX, randomY);
+            return GetPatrolPos(MapID, BornX, BornY, r, times - 1);
         }
+
         private static double RandomDouble(double minValue, double maxValue)
         {
             Random random = MapMgr.random;

@@ -43,6 +43,8 @@ namespace RpgMap
             int rate = r.Next(90, 110);
             int Damage = Math.Max((int)((SrcProp.Attack * config.AttackParam - TarProp.Defense) * rate / 100), 0);
             TarActor.DoDecHP(Damage, SrcActor.Type, SrcActor.ID);
+            if (Damage > 1500)
+                Log.W($"do fight damage {Damage}, from {SrcProp.Attack},{config.AttackParam},{TarProp.Defense},{rate}");
 
             Log.R($"SrcActor {SrcActor.ID} fight TarActor {TarActor.ID} skill {config.SkillID} damage:{Damage}");
             Log.P();

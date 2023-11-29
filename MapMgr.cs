@@ -47,7 +47,7 @@ namespace RpgMap
             Map map = new(mapID, mapName, line);
             mapDic[mapName] = map;
 
-            mapList.TryGetValue(mapID, out List<Map> list);
+            mapList.TryGetValue(mapID, out List<Map>? list);
             list ??= new();
             list.Add(map);
             mapList[mapID] = list;
@@ -57,11 +57,12 @@ namespace RpgMap
         // 返回一个可用的分线
         public static int GetMapLine(int mapID)
         {
-            List<Map> list = new();
-            mapList.TryGetValue(mapID, out list);
             int line = 0;
-            foreach(Map m in list)
-                line = Math.Max(line, m.Line);
+            if (mapList.TryGetValue(mapID, out List<Map>? list))
+            {
+                foreach (Map m in list)
+                    line = Math.Max(line, m.Line);
+            }
             return line + 1;
         }
 

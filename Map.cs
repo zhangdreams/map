@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
@@ -34,7 +35,7 @@ namespace RpgMap
         public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
         public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
-        public long MaxMonsterID { get; set; } = 0;   // 地图内怪物的最大实例ID
+        public long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
         public int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
         public Timer Timer;
         public int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
@@ -75,17 +76,30 @@ namespace RpgMap
             try
             {
                 long Now2 = Time.Now2();
+                //Stopwatch stopwatch = Stopwatch.StartNew();
                 // 100ms 一次轮询
+                //stopwatch.Restart();
                 LoopMoving(Now2);
+                //stopwatch.Stop();
+                //Console.WriteLine($"LoopMoving, {stopwatch.ElapsedMilliseconds}");
+                //stopwatch.Restart();
                 LoopSkills(Now2);
+                //stopwatch.Stop();
+                //Console.WriteLine($"LoopSkills, {stopwatch.ElapsedMilliseconds}");
+                //stopwatch.Restart();
                 LoopBuff(Now2);
+                //stopwatch.Stop();
+                //Console.WriteLine($"LoopBuff, {stopwatch.ElapsedMilliseconds}");
 
                 //  200ms 轮询
                 if (LoopTick200 == 2)
                 {
                     LoopTick200 = 1;
                     LoopTick5000 += 1;
-                    LoopMonsterAI(Now2);    
+                    //stopwatch.Restart();
+                    LoopMonsterAI(Now2);
+                    //stopwatch.Stop();
+                    //Console.WriteLine($"LoopMonsterAI, {stopwatch.ElapsedMilliseconds}");
                 }
                 else
                 {

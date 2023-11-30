@@ -33,6 +33,7 @@ namespace RpgMap
         public int MonsterNum { get; set; } = 0;    // 地图内怪物数量
         public Dictionary<long, MapMonster> Monsters { get; set; } = new(); 
         public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
+        public Dictionary<(int, long), (int, int)> ActorPosMap { get; set; } = new();
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
         public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
         public long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
@@ -76,30 +77,17 @@ namespace RpgMap
             try
             {
                 long Now2 = Time.Now2();
-                //Stopwatch stopwatch = Stopwatch.StartNew();
                 // 100ms 一次轮询
-                //stopwatch.Restart();
                 LoopMoving(Now2);
-                //stopwatch.Stop();
-                //Console.WriteLine($"LoopMoving, {stopwatch.ElapsedMilliseconds}");
-                //stopwatch.Restart();
                 LoopSkills(Now2);
-                //stopwatch.Stop();
-                //Console.WriteLine($"LoopSkills, {stopwatch.ElapsedMilliseconds}");
-                //stopwatch.Restart();
                 LoopBuff(Now2);
-                //stopwatch.Stop();
-                //Console.WriteLine($"LoopBuff, {stopwatch.ElapsedMilliseconds}");
 
                 //  200ms 轮询
                 if (LoopTick200 == 2)
                 {
                     LoopTick200 = 1;
                     LoopTick5000 += 1;
-                    //stopwatch.Restart();
                     LoopMonsterAI(Now2);
-                    //stopwatch.Stop();
-                    //Console.WriteLine($"LoopMonsterAI, {stopwatch.ElapsedMilliseconds}");
                 }
                 else
                 {
@@ -146,6 +134,7 @@ namespace RpgMap
             RoleNum++;
             ActorMap[(1, MapActor.ID)] = MapActor;
             Aoi.EnterArea(1, MapRole.ID, PosX, PosY);
+            //ActorPosMap[(1, MapActor.ID)] = ((int)PosX, (int)PosY);
             // todo
         }
 
@@ -159,6 +148,7 @@ namespace RpgMap
             RoleNum --;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(1, RoleID, pos.x, pos.y);
+            //ActorPosMap.Remove((1, RoleID));
             if (RoleNum == 0 && Line > 0)  
             {
                 Timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -174,6 +164,7 @@ namespace RpgMap
             RoleNum ++; // todo 这里暂时把怪物当做玩家计数
             ActorMap[(2, MapActor.ID)] = MapActor;
             Aoi.EnterArea(2, monster.ID, monster.PosX, monster.PosY);
+            //ActorPosMap[(1, MapActor.ID)] = ((int)monster.PosX, (int)monster.PosY);
         }
         public void DoMonsterExit(long MonsterID)
         {
@@ -185,6 +176,7 @@ namespace RpgMap
             MonsterNum --;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(2, MonsterID, pos.x, pos.y);
+            //ActorPosMap.Remove((2, MonsterID));
             DoRoleExit(MonsterID);  // todo 这里暂时把怪物当做玩家计数
         }
 
@@ -212,6 +204,12 @@ namespace RpgMap
             return NewHp;
         }
 
+        // 返回地图内有Actor的坐标列表
+        //public List<(int, int)> GetActorPosMap()
+        //{
+        //    return ActorPosMap.Values.ToList();
+        //}
+
         // 轮询检查移动
         public void LoopMoving(long Now2)
         {
@@ -226,14 +224,14 @@ namespace RpgMap
         public void LoopMoving2(long Now2)
         {
             int upTime = (int)((int)Now2 - LastTickTime);
-            foreach (var Dic in ActorMap)
+            foreach (MapActor Actor in ActorMap.Values)
             {
-                MapActor Actor = Dic.Value;
                 if (Actor.MoveState())
                 {
                     MapPos Pos = Actor.GetPos();
                     (double NewX, double NewY) = Actor.DoMoving(upTime);
                     Aoi.DoMove(Actor.Type, Actor.ID, Pos.x, Pos.y, NewX, NewY);
+                    //ActorPosMap[(Actor.Type, Actor.ID)] = ((int)NewX, (int)NewY);
                 }
             }
         }
@@ -441,7 +439,8 @@ namespace RpgMap
                                 Fight fight = new();
                                 doingList.Insert(0, fight);
                             }
-                        }else
+                        }
+                        else
                         {
                             Fight fight = new();
                             doingList.Insert(0, fight);

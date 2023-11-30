@@ -12,6 +12,7 @@ namespace RpgMap
         public static Dictionary<string, Map> mapDic = new();
         public static Dictionary<int, List<Map>> mapList = new();
         //private static int MapID = 0;
+        public static readonly double SphereRis = 0.5;  // 碰撞球半径
         public static Random random = new((int)DateTime.Now.Ticks);
         public static string show { get; set; } = "";
 
@@ -30,7 +31,6 @@ namespace RpgMap
                 mapName = MapTool.GetNormalName(mapID, line);
             }
             return CreateMap(mapID, mapName, line);
-
         }
         public static Map? CreateMap(int mapID, string mapName)
         {

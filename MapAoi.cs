@@ -34,7 +34,7 @@ namespace RpgMap
         }
 
         // 返回某一个格子内的对象
-        private List<(int, long)> GetGride(double X, double Y)
+        public List<(int, long)> GetGride(double X, double Y)
         {
             int GrideX = (int)X / GrideLength;
             int GrideY = (int)Y / GrideWidth;

@@ -106,5 +106,23 @@ namespace RpgMap
             };
             return HurtMap;
         }
+
+        public List<(int,int)> GetGridePosList(Map map, double x, double y)
+        {
+
+            List<(int, long)> keys = map.Aoi.GetGride(x, y);
+            List<(int, int)> Poslist = new();
+            foreach (var key in keys)
+            {
+                var actor = GetActor(map, key);
+                if (actor == null)
+                    continue;
+                MapPos pos = actor.GetPos();
+                (int,int) p = ((int)pos.x, (int)pos.y);
+                if(!Poslist.Contains(p))
+                    Poslist.Add(p);
+            }
+            return Poslist;
+        }
     }
 }

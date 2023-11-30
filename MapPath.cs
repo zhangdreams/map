@@ -68,14 +68,6 @@ namespace RpgMap
                 else
                     neighborMaps[(current.X, current.Y)] = step + 1;
 
-                //int step = 1;
-                //if (!neighborMaps.ContainsKey((current.X,current.Y)))
-                //    neighborMaps[(current.X, current.Y)] = 1;
-                //else
-                //{
-                //    step = neighborMaps[(current.X, current.Y)];
-                //    neighborMaps[(current.X, current.Y)] = step + 1;
-                //}
                 List<Node> Neighbors = GetNeighbors(MapID, current, step);
                 if (Neighbors.Count <= 0)
                     return null;

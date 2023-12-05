@@ -12,14 +12,11 @@ namespace RpgMap
         public static Dictionary<string, Map> mapDic = new();
         public static Dictionary<int, List<Map>> mapList = new();
         //private static int MapID = 0;
-        public static readonly double SphereRis = 0.5;  // 碰撞球半径
-        public static Random random = new((int)DateTime.Now.Ticks);
-        public static string show { get; set; } = "";
+        public static readonly double SphereRis = 0.5;  // 碰撞球半径(0表示无视碰撞)
+        public static Random random = new();
+        public static string Show { get; set; } = "";
 
-        public MapMgr() 
-        {
-            //SetTimer();
-        }
+        public MapMgr() {}
 
         public static Map CreateMap(int mapID)
         {
@@ -78,8 +75,8 @@ namespace RpgMap
         public static Map GetMap(int mapID)
         {
             var config = MapReader.GetConfig(mapID);
-            List<Map> list = new();
-            mapList.TryGetValue(mapID, out list);
+            mapList.TryGetValue(mapID, out List<Map> list);
+            list ??= new();
             foreach (Map map in list)
             {
                 if (map.RoleNum < config.MaxNum)
@@ -91,8 +88,8 @@ namespace RpgMap
         public static void DelMap(Map map)
         {
             mapDic.Remove(map.MapName);
-            List<Map> list = new();
-            mapList.TryGetValue(map.MapID, out list);
+            mapList.TryGetValue(map.MapID, out List<Map> list);
+            list ??= new();
             list.Remove(map);
             if (list.Count > 0)
                 mapList[map.MapID] = list;

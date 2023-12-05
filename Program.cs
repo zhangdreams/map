@@ -31,11 +31,11 @@ namespace RpgMap
             }
             MapMgr.ShowDict();
             //BossEnterMap(1);
-            DoMonsterEnterMap(1, 99);
+            DoMonsterEnterMap(1, 800, new Patrol2());
 
-            while (MapMgr.show != "c")
+            while (MapMgr.Show != "c")
             {
-                MapMgr.show = Console.ReadLine() ?? "n";
+                MapMgr.Show = Console.ReadLine() ?? "n";
             }
         }
 
@@ -59,7 +59,7 @@ namespace RpgMap
                     continue;
                 }
                 long MID = map.GetMaxMonsterID();
-                int camp = map.getMaxCamp();
+                int camp = map.GetMaxCamp();
                 MapMonster monster = new(MID, ID, config.Name, prop.Speed, camp, 10 * camp, 10 * camp)
                 {
                     HP = prop.MaxHp,
@@ -87,19 +87,7 @@ namespace RpgMap
             
         }
 
-        public static (int, int) RandomBornPos(int mapid, int times)
-        {
-            if(times <= 0)
-                return (0, 0);
-            var mapConfig = MapReader.GetConfig(mapid);
-            int x = MapMgr.random.Next(mapConfig.Width);
-            int y = MapMgr.random.Next(mapConfig.Height);
-            if (!MapPath.IsObstacle(mapid, x, y))
-                return (x, y);
-            return RandomBornPos(mapid, times - 1);
-        }
-
-        public static void DoMonsterEnterMap(int mapid, int monsterNum)
+        public static void DoMonsterEnterMap(int mapid, int monsterNum, object doing)
         {
             List<int> IDs = MonsterReader.GetMonsterIDs();
             for (int i = 0;i < monsterNum;i++)
@@ -115,8 +103,8 @@ namespace RpgMap
                     continue;
                 }
                 long MID = map.GetMaxMonsterID();
-                int camp = map.getMaxCamp();
-                (int x, int y) = RandomBornPos(mapid, 5);
+                int camp = map.GetMaxCamp();
+                (int x, int y) = MapCommon.RandomBornPos(map, 5);
                 MapMonster monster = new(MID, ID, config.Name, prop.Speed, camp, x, y)
                 {
                     HP = prop.MaxHp,
@@ -126,7 +114,7 @@ namespace RpgMap
                     AttackDistance = config.AttackDistance,
                     map = map,
                 };
-                monster.doing.Add(new Patrol2());
+                monster.doing.Add(doing);
                 Dictionary<int, ActorSkill> skills = new();
                 int skillPos = 1;
                 foreach (var sid in config.Skills)

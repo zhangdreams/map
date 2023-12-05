@@ -115,7 +115,7 @@ namespace RpgMap
             return MaxMonsterID++;
         }
 
-        public int getMaxCamp()
+        public int GetMaxCamp()
         {
             return MaxCamp++;
         }
@@ -223,13 +223,13 @@ namespace RpgMap
         }
         public void LoopMoving2(long Now2)
         {
-            int upTime = (int)((int)Now2 - LastTickTime);
+            int upTime = (int)(Now2 - LastTickTime);
             foreach (MapActor Actor in ActorMap.Values)
             {
                 if (Actor.MoveState())
                 {
                     MapPos Pos = Actor.GetPos();
-                    (double NewX, double NewY) = Actor.DoMoving(upTime);
+                    (double NewX, double NewY) = Actor.DoMoving(Now2, upTime);
                     Aoi.DoMove(Actor.Type, Actor.ID, Pos.x, Pos.y, NewX, NewY);
                     //ActorPosMap[(Actor.Type, Actor.ID)] = ((int)NewX, (int)NewY);
                 }
@@ -313,7 +313,8 @@ namespace RpgMap
             try
             {
                 LoopMonsterAI2(Now2);
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Log.E(e.ToString());
             }
@@ -327,6 +328,12 @@ namespace RpgMap
                 if (Actor == null)
                 {
                     removeKeys.Add(monster.ID);
+                    continue;
+                }
+                if(Now2 < monster.AiTime)
+                {
+                    // 未到AI触发时间
+                    monster.AiTime = Now2 + 200;
                     continue;
                 }
 
@@ -347,7 +354,7 @@ namespace RpgMap
                     DoMoveTo(Actor, moveTo, ref doingList);
                     continue;
                 }
-                else if (doing is MoveTo to)  // 继续移动
+                else if (doing is MoveTo)  // 继续移动
                 {
                     (int t, long i) = monster.TarKey;
                     bool hasTarget = t > 0 && i > 0;
@@ -373,24 +380,6 @@ namespace RpgMap
                         // 到达攻击距离
                         if (MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
                             monster.StopMove();
-                        else
-                        {
-                            // 位置可能更新
-                            if (Math.Round(pos.x) != Math.Round(to.X) && Math.Round(pos.y) != Math.Round(to.Y))
-                            {
-                                to.X = pos.x;
-                                to.Y = pos.y;
-                                monster.TargetX = pos.x;
-                                monster.TargetY = pos.y;
-                            }
-                        }
-
-
-                        //if (Math.Round(monster.PosX) == Math.Round(to.X) && Math.Round(monster.PosY) == Math.Round(to.Y))
-                        //{
-                        //    doingList.Remove(doing);
-                        //    doingList.Insert(0, new Fight());
-                        //}
                     }
                     else if (Actor.IsArrival())
                         doingList.Remove(doing);
@@ -406,8 +395,11 @@ namespace RpgMap
                 else if(doing is Patrol2)
                 {
                     var Next = MonsterAI.Patrol2(this, monster);
-                    if(Next is MoveTo moveto)
+                    if(Next == null)
+                    {
+                        MoveTo moveto = MonsterAI.Patrol(monster);
                         DoMoveTo(Actor, moveto, ref doingList);
+                    }
                     else
                         doingList.Insert(0, Next);
                     continue;
@@ -448,7 +440,8 @@ namespace RpgMap
                     }
                     else if (TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance))
                     {
-                        MoveTo moveto = new(pos);
+                        (double rx, double ry) = MapTool.GetPatrolPos(this, pos, monster.AttackDistance);
+                        MoveTo moveto = new(rx, ry);
                         DoMoveTo(Actor, moveto, ref doingList);
                     }
                     else
@@ -526,7 +519,7 @@ namespace RpgMap
 
         public void ShowDict()
         {
-            string ShowModel = MapMgr.show;
+            string ShowModel = MapMgr.Show;
             switch (ShowModel)
             {
                 case "1":
@@ -554,10 +547,11 @@ namespace RpgMap
                 }
                 Log.P($"monster ({n++}) :");
                 Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
-                Log.W($"  doingList {monster.doing.Count} curDoing:{ShowDoing(monster.doing[0])}; target:{monster.TarKey}");
+                Log.W($"  doingList {monster.doing.Count}; target:{monster.TarKey}");
+                if (monster.doing.Count > 0)
+                    ShowDoing(monster.doing[0]);
          
-                (double, double) p = (0,0);
-                lastPos.TryGetValue(monster.MonsterID, out p);
+                lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
                 (double X, double Y) = p;
                 bool print = monster.doing[0] is MoveTo;
                 if (X == monster.PosX && Y == monster.PosY && print)

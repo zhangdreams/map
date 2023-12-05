@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RpgMap
@@ -27,6 +28,7 @@ namespace RpgMap
         public List<Node> Path { get; set; } = new();    // 寻路路径
         public double TargetX { get; set; } = 0;  // 移动的目标坐标点
         public double TargetY { get; set; } = 0;
+        public long AiTime { get; set; } = 0;   // 下次AI触发时间
         public ArrayList doing = new() ;    // AI Doing
         public double PatrolDistance { get; set; } = 3; // 巡逻半径
         public double PursueDistance { get; set; } = 3; // 追击半径
@@ -34,6 +36,7 @@ namespace RpgMap
         public (int, long) TarKey;  // 攻击目标
         public long DeadTime { get; set; } = 0; // 复活时间
         public Map map;
+        public long PauseTime { get; set; } = 0; // 碰到动态障碍物停止移动的时间
 
         public MapMonster(long ID, int MonsterID, string Name, int Speed, int Camp, double BornX, double BornY)
         {
@@ -166,9 +169,43 @@ namespace RpgMap
         }
 
         // 位置更新
-        public (double, double) Moving(int upTime)
+        public (double, double) Moving(long Now2, int upTime)
         {
             (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
+            if (((int)NewX != (int)PosX || (int)NewY != (int)PosY) && MapPath.IsObstacle(map, (int)NewX, (int)NewY))
+            {
+                if (PauseTime == 0)
+                {
+                    PauseTime = Now2 + 2000;    // 2s后仍被阻挡则重新寻路
+                    return (PosX, PosY);
+                }
+                else if(Now2 >= PauseTime)
+                {
+                    PauseTime = 0;
+                    Node Start = new((int)PosX, (int)PosY);
+                    Node Goal;
+                    if (Path.Count > 0)
+                        Goal = Path[0];
+                    else 
+                        Goal = new((int)TargetX, (int)TargetY);
+
+                    var path2 = MapPath.FindPath(map, Start, Goal);
+                    Log.W($"monster {ID} pause reFindPath start:{Start.Show()} goal:{Goal.Show()}, target{((int)TargetX, (int)TargetY)}, NewPos {((int)NewX, (int)NewY)}, {Path.Count}");
+                    if (path2 == null)
+                    {
+                        StopMove();
+                        return (PosX, PosY);
+                    }
+                    path2.AddRange(Path);
+                    Path = path2;
+                    TargetX = Path[0].X;
+                    TargetY = Path[0].Y;
+
+                    return (PosX, PosY);
+                }else
+                    return (PosX, PosY);
+            }else if(PauseTime > 0)
+                PauseTime = 0;
             PosX = NewX;
             PosY = NewY;
             return (NewX, NewY);

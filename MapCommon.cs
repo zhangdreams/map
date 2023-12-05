@@ -107,10 +107,9 @@ namespace RpgMap
             return HurtMap;
         }
 
-        public List<(int,int)> GetGridePosList(Map map, double x, double y)
+        public static List<(int,int)> GetGridePosList(Map map, double x, double y)
         {
-
-            List<(int, long)> keys = map.Aoi.GetGride(x, y);
+            List<(int, long)> keys = map.Aoi.GetAoi(x, y);
             List<(int, int)> Poslist = new();
             foreach (var key in keys)
             {
@@ -123,6 +122,31 @@ namespace RpgMap
                     Poslist.Add(p);
             }
             return Poslist;
+        }
+
+        public static List<(int,int)> GetMapPosList(Map map)
+        {
+            List<(int, int)> PosList = new();
+            foreach(var actor in map.ActorMap.Values)
+            {
+                MapPos pos= actor.GetPos();
+                (int, int) p = ((int)pos.x, (int)pos.y);
+                if (!PosList.Contains(p))
+                    PosList.Add(p);
+            }
+            return PosList;
+        }
+
+        public static (int, int) RandomBornPos(Map map, int times)
+        {
+            if (times <= 0)
+                return (0, 0);
+            var mapConfig = MapReader.GetConfig(map.MapID);
+            int x = MapMgr.random.Next(mapConfig.Width);
+            int y = MapMgr.random.Next(mapConfig.Height);
+            if (!MapPath.IsObstacle(map, x, y))
+                return (x, y);
+            return RandomBornPos(map, times - 1);
         }
     }
 }

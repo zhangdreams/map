@@ -87,15 +87,19 @@ namespace RpgMap
 
         // 返回一个出生点为中心，半径R内的一个巡逻点
         // 一般怪物的巡逻范围不会太大，这里不考虑寻路问题
-        public static (double, double) GetPatrolPos(int MapID, double BornX, double BornY, double r)
+        public static (double, double) GetPatrolPos(Map map, MapPos pos, double r)
         {
-            return GetPatrolPos(MapID, BornX, BornY, r, 5);
+            return GetPatrolPos(map, pos.x, pos.y, r, 5);
         }
-        public static (double, double) GetPatrolPos(int MapID, double BornX, double BornY, double r, int times)
+        public static (double, double) GetPatrolPos(Map map, double BornX, double BornY, double r)
+        {
+            return GetPatrolPos(map, BornX, BornY, r, 5);
+        }
+        public static (double, double) GetPatrolPos(Map map, double BornX, double BornY, double r, int times)
         {
             if(times <= 0) 
                 return(BornX, BornY);
-            var config = MapReader.GetConfig(MapID);
+            var config = MapReader.GetConfig(map.MapID);
             // 生成随机半径
             double randomRadius = r * Math.Sqrt(RandomDouble(0, 1));
             // 生成随机角度（弧度）
@@ -105,9 +109,9 @@ namespace RpgMap
 
             randomX = Math.Max(0, Math.Min(randomX, config.Width));
             randomY = Math.Max(0, Math.Min(randomY, config.Height));
-            if (!MapPath.IsObstacle(MapID, (int)randomX, (int)randomY))
+            if (!MapPath.IsObstacle(map, (int)randomX, (int)randomY))
                 return (randomX, randomY);
-            return GetPatrolPos(MapID, BornX, BornY, r, times - 1);
+            return GetPatrolPos(map, BornX, BornY, r, times - 1);
         }
 
         private static double RandomDouble(double minValue, double maxValue)

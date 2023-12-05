@@ -14,7 +14,7 @@ namespace RpgMap
         public int Width { get; set; } // 地图宽
 
         public Dictionary<(int,int), List<(int, long)>> Grides = new(); // 用来保存每一个格子的对象
-        public Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
+        //public Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
 
         public MapAoi(int Length, int Width) 
         {
@@ -65,11 +65,9 @@ namespace RpgMap
         }
         private List<(int, int)> GetNeighbors(int GrideX, int GrideY)
         {
-            var key = (GrideX, GrideY);
-            if (Nerbors.ContainsKey(key))
-            {
-                return Nerbors[key];
-            }
+            //var key = (GrideX, GrideY);
+            //if (Nerbors.ContainsKey(key))
+            //    return Nerbors[key];
             List<(int, int)> values = new();
             for (int i = GrideX-1; i <= GrideX+1; i++)
             {
@@ -80,7 +78,7 @@ namespace RpgMap
                         values.Add(k);
                 }
             }
-            Nerbors[key] = values;
+            //Nerbors[key] = values;
             return values;
         }
 

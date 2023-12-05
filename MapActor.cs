@@ -152,35 +152,40 @@ namespace RpgMap
             }
         }
 
-        public (double, double) DoMoving(int upTime)
+        public (double, double) DoMoving(long Now2, int upTime)
         {
-            switch (Type)
+            try
             {
-                case 1:
-                    MapRole role = Map.Roles[ID];
-                    var ret = role.Moving(upTime);
-                    if(IsArrival())
-                        DoStopMove();
-                    return ret;
-                case 2:
-                    MapMonster monster = Map.Monsters[ID];
-                    ret = monster.Moving(upTime);
-                    if (MapMgr.show == "m")
-                    {
-                        Log.W($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.Path.Count}");
-                    }
-                    if (IsArrival())
-                    {
-                        if (MapMgr.show == "m")
-                            Log.W($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
-                        if (monster.Path.Count <= 0)
+                switch (Type)
+                {
+                    case 1:
+                        MapRole role = Map.Roles[ID];
+                        var ret = role.Moving(upTime);
+                        if (IsArrival())
                             DoStopMove();
-                        else
-                            monster.MoveNext(); // 未到达终点
-                    };
-                    return ret;
-                default:
-                    return (0,0);
+                        return ret;
+                    case 2:
+                        MapMonster monster = Map.Monsters[ID];
+                        ret = monster.Moving(Now2, upTime);
+                        if (MapMgr.Show == "m")
+                            Log.W($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.Path.Count}");
+                        if (IsArrival())
+                        {
+                            if (MapMgr.Show == "m")
+                                Log.W($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
+                            if (monster.Path.Count <= 0)
+                                DoStopMove();
+                            else
+                                monster.MoveNext(); // 未到达终点
+                        };
+                        return ret;
+                    default:
+                        return (0, 0);
+                }
+            }catch(Exception e)
+            {
+                Log.E(e.ToString());
+                return (0, 0);
             }
         }
 
@@ -205,10 +210,10 @@ namespace RpgMap
         {
             try
             {
-                if(MapPath.IsObstacle(Map.MapID, (int)x, (int)y))
-                {
-                    throw new Exception($"pos can't move x={x},y={y}");
-                }
+                //if(MapPath.IsObstacle(Map, (int)x, (int)y))
+                //{
+                //    throw new Exception($"pos can't move x={x},y={y}");
+                //}
                 if (!MapPath.IsValidCoordinate(Map.MapID, (int)x, (int)y))
                 {
                     throw new Exception($"pos is unvalid x={x},y={y}");
@@ -217,7 +222,10 @@ namespace RpgMap
                 MapPos Pos = GetPos();
                 Node Start = new((int)Pos.x, (int)Pos.y);
                 Node Goal = new ((int)x, (int)y);
-                var Path = MapPath.FindPath(Map.MapID, Start, Goal) ?? throw new Exception($"can not move to pos {(Map.MapName,ID)} x={x},y={y}, curpos {(Start.X, Start.Y)}");
+                //var Path = MapPath.FindPath(Map, Start, Goal) ?? throw new Exception($"can not move to pos {(Map.MapName,ID)} x={x},y={y}, curpos {(Start.X, Start.Y)}");
+                var Path = MapPath.FindPath(Map, Start, Goal);
+                if (Path == null)
+                    return false;
                 SetMoveState(true);
                 SetTargetPos(x, y);
                 SetPath(Path);

@@ -30,13 +30,18 @@ namespace RpgMap
         {
             return other.X == X && other.Y == Y;
         }
+
+        public string Show()
+        {
+            return $"({X},{Y})";
+        }
     }
 
     class MapPath
     {
-        public static List<Node>? FindPath(int MapID, Node start, Node goal)
+        public static List<Node>? FindPath(Map map, Node start, Node goal)
         {
-            if (!ContainsObstacleBetween(MapID, start, goal))    // 中间没有障碍物，直接可达
+            if ((start.X == goal.X || start.Y == goal.Y) && !ContainsObstacleBetween(map, start, goal))    // 中间没有障碍物，直接可达
                 return new() { goal };
 
             List<Node> openSet = new();
@@ -68,7 +73,7 @@ namespace RpgMap
                 else
                     neighborMaps[(current.X, current.Y)] = step + 1;
 
-                List<Node> Neighbors = GetNeighbors(MapID, current, step);
+                List<Node> Neighbors = GetNeighbors(map, current, step);
                 if (Neighbors.Count <= 0)
                     return null;
                 foreach (Node neighbor in Neighbors)
@@ -76,12 +81,12 @@ namespace RpgMap
                     if (closedSet.Contains(neighbor))
                         continue;
 
-                    int tentativeG = current.G + CalculateDistance(MapID, current, neighbor);
+                    int tentativeG = current.G + CalculateDistance(map, current, neighbor);
                     if (!openSet.Contains(neighbor) || tentativeG < neighbor.G)
                     {
                         neighbor.Parent = current;
                         neighbor.G = tentativeG;
-                        neighbor.H = CalculateDistance(MapID, neighbor, goal);
+                        neighbor.H = CalculateDistance(map, neighbor, goal);
                         if (!openSet.Contains(neighbor))
                             openSet.Add(neighbor);
                     }
@@ -102,7 +107,7 @@ namespace RpgMap
             return path;
         }
 
-        public static List<Node> GetNeighbors(int MapID, Node node, int step)
+        public static List<Node> GetNeighbors(Map map, Node node, int step)
         {
             List<Node> neighbors = new ();
 
@@ -116,7 +121,7 @@ namespace RpgMap
 
                 Node newNode = new (newX, newY);
                 // 检查新的坐标是否合法，不超出地图边界并且不是障碍物
-                if (IsValidCoordinate(MapID, newX, newY) && !IsObstacle(MapID, newX, newY) && !ContainsObstacleBetween(MapID, node, newNode))
+                if (IsValidCoordinate(map.MapID, newX, newY) && !IsObstacle(map, newX, newY) && !ContainsObstacleBetween(map, node, newNode))
                     neighbors.Add(newNode);
 
             }
@@ -154,19 +159,19 @@ namespace RpgMap
                 list.Add(P);
         }
 
-        private static int CalculateDistance(int MapID, Node a, Node b)
+        private static int CalculateDistance(Map map, Node a, Node b)
         {
             int dx = a.X - b.X;
             int dy = a.Y - b.Y;
 
             int distance = (int)(Math.Sqrt(dx * dx + dy * dy) * 10);
-            if(ContainsObstacleBetween(MapID, a, b))
+            if(ContainsObstacleBetween(map, a, b))
                 distance *= 5;
 
             return distance;
         }
 
-        private static bool ContainsObstacleBetween(int MapID, Node start, Node end)
+        private static bool ContainsObstacleBetween(Map map, Node start, Node end)
         {
             // 检查两个节点之间的直线路径是否包含障碍物
             int dx = Math.Abs(end.X - start.X);
@@ -181,7 +186,7 @@ namespace RpgMap
 
             while (x != end.X || y != end.Y)
             {
-                if (IsObstacle(MapID, x, y) && x != start.X && y != start.Y)
+                if (IsObstacle(map, x, y) && (x != start.X || y != start.Y))
                     return true;
 
                 int doubleError = error * 2;
@@ -222,6 +227,39 @@ namespace RpgMap
             return config.UnWalkList.Contains(pos);
         }
 
+        public static bool IsObstacle(int x, int y, List<(int, int)> List)
+        {
+            if(List.Contains((x,y)))
+                return true;
+            foreach((int px, int py) in List)
+            {
+                if(MapTool.CheckDistance(x, y, px, py, MapMgr.SphereRis * 2))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsObstacle(Map map, int x, int y)
+        {
+            var config = MapReader.GetConfig(map.MapID);
+            if (config == null)
+                return true;
+            var pos = new ConfigPos(x, y);
+            if(config.UnWalkList.Contains(pos))
+                return true;
+
+            // 玩家(动态障碍物)
+            List<(int, int)> List = MapCommon.GetGridePosList(map, x, y);
+            //List<(int, int)> List = MapCommon.GetMapPosList(map);
+            if(List.Contains((x,y)))
+                return true;
+            foreach ((int px, int py) in List)
+            {
+                if (MapTool.GetDistance(x, y, px, py) < MapMgr.SphereRis * 2)
+                    return true;
+            }
+            return false;
+        }
     }
 
 }

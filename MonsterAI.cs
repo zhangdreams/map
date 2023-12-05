@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,17 +77,14 @@ namespace RpgMap
         // 被动怪巡逻
         public static MoveTo Patrol(MapMonster monster)
         {
-            (double randomX, double randomY) = MapTool.GetPatrolPos(monster.map.MapID, monster.BornX, monster.BornY, monster.PatrolDistance);   
+            (double randomX, double randomY) = MapTool.GetPatrolPos(monster.map, monster.BornX, monster.BornY, monster.PatrolDistance);   
             return new MoveTo(randomX, randomY);
         }
 
         // 主动怪巡逻
-        public static object Patrol2(Map map, MapMonster monster)
+        public static Pursue? Patrol2(Map map, MapMonster monster)
         {
             var Pursue = SearchInArea(map, monster);
-            if (Pursue == null)
-                return Patrol(monster);
-
             return Pursue;
         }
 
@@ -146,7 +144,6 @@ namespace RpgMap
             int SkillID = FilterSkillID(Actor.Skills);
             if (SkillID == 0)
                 return null;
-            //Actor.DoUseSkill(SkillID, pos, new List<(int, long)> { monster.TarKey });
             return SkillID;
         }
 

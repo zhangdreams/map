@@ -172,7 +172,7 @@ namespace RpgMap
         public (double, double) Moving(long Now2, int upTime)
         {
             (double NewX, double NewY) = MapTool.CalcMovingPos(PosX, PosY, TargetX, TargetY, Speed, upTime);
-            if (((int)NewX != (int)PosX || (int)NewY != (int)PosY) && MapPath.IsObstacle(map, (int)NewX, (int)NewY))
+            if (MapMgr.SphereRis > 0 && ((int)NewX != (int)PosX || (int)NewY != (int)PosY) && MapPath.IsObstacle(map, (int)NewX, (int)NewY))
             {
                 if (PauseTime == 0)
                 {

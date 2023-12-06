@@ -210,10 +210,6 @@ namespace RpgMap
         {
             try
             {
-                //if(MapPath.IsObstacle(Map, (int)x, (int)y))
-                //{
-                //    throw new Exception($"pos can't move x={x},y={y}");
-                //}
                 if (!MapPath.IsValidCoordinate(Map.MapID, (int)x, (int)y))
                 {
                     throw new Exception($"pos is unvalid x={x},y={y}");

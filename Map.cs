@@ -68,7 +68,7 @@ namespace RpgMap
         {
             LastTickTime = Time.Now2();
             // 增加一个轮询
-            Timer cTimer = new (MapLoop, null, 0, 100);
+            Timer cTimer = new (MapLoop, null, 200, 100);
             Timer = cTimer;
         }
 
@@ -81,18 +81,18 @@ namespace RpgMap
                 LoopMoving(Now2);
                 LoopSkills(Now2);
                 LoopBuff(Now2);
+                LoopMonsterAI(Now2);
 
                 //  200ms 轮询
                 if (LoopTick200 == 2)
                 {
                     LoopTick200 = 1;
                     LoopTick5000 += 1;
-                    LoopMonsterAI(Now2);
+                    LoopMonsterDead(Now2);
                 }
                 else
                 {
                     LoopTick200 += 1;
-                    LoopMonsterDead(Now2);
                     // todo 200ms 轮询的可以放一些在这里处理，平衡一下压力
                 }
 
@@ -260,6 +260,8 @@ namespace RpgMap
             List<MapSkill> preDel = new();
             for(int i = 0; i < SkillList.Count; i++)
             {
+                if (SkillList[i] == null)
+                    continue;
                 var Skill = SkillList[i];
                 (int, long) SrcKey = (Skill.ActorType, Skill.ActorID);
                 if (!ActorMap.ContainsKey(SrcKey))
@@ -331,11 +333,8 @@ namespace RpgMap
                     continue;
                 }
                 if(Now2 < monster.AiTime)
-                {
-                    // 未到AI触发时间
-                    monster.AiTime = Now2 + 200;
-                    continue;
-                }
+                    continue;   // 未到AI触发时间
+                monster.AiTime = Now2 + 200;
 
                 if (!Actor.IsAlive())
                     continue;
@@ -549,18 +548,19 @@ namespace RpgMap
                 Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
                 Log.W($"  doingList {monster.doing.Count}; target:{monster.TarKey}");
                 if (monster.doing.Count > 0)
-                    ShowDoing(monster.doing[0]);
-         
-                lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
-                (double X, double Y) = p;
-                bool print = monster.doing[0] is MoveTo;
-                if (X == monster.PosX && Y == monster.PosY && print)
                 {
-                    Log.R($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
-                    foreach (var doing in monster.doing)
-                        Log.R($"monster doing {doing}");
+                    ShowDoing(monster.doing[0]);
+                    lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
+                    (double X, double Y) = p;
+                    bool print = monster.doing[0] is MoveTo;
+                    if (X == monster.PosX && Y == monster.PosY && print)
+                    {
+                        Log.R($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
+                        foreach (var doing in monster.doing)
+                            Log.R($"monster doing {doing}");
+                    }
+                    lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
                 }
-                lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
             }
             Log.P();
         }

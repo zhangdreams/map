@@ -44,23 +44,23 @@ namespace RpgMap
             if ((start.X == goal.X || start.Y == goal.Y) && !ContainsObstacleBetween(map, start, goal))    // 中间没有障碍物，直接可达
                 return new() { goal };
 
-            List<Node> openSet = new();
-            List<Node> closedSet = new();
+            Dictionary<Node, int> opendict = new();
+            Dictionary<Node, int> closedict = new();
             Dictionary<(int,int), int> neighborMaps = new(); // 增加步长
 
-            openSet.Add(start);
+            opendict[start] = 1;
 
-            while (openSet.Count > 0)
+            while (opendict.Count > 0)
             {
-                Node current = openSet[0];
-                for (int i = 1; i < openSet.Count; i++)
+                Node current = opendict.First().Key;
+                
+                foreach(Node node in opendict.Keys)
                 {
-                    if (openSet[i].F < current.F || (openSet[i].F == current.F && openSet[i].H < current.H))
-                        current = openSet[i];
+                    if(node.F < current.F || (node.F == current.F && node.H < current.H))
+                        current = node;
                 }
-
-                openSet.Remove(current);
-                closedSet.Add(current);
+                opendict.Remove(current);
+                closedict[current] = 1;
 
                 if (current.Arrival(goal))
                     return ReconstructPath(current);
@@ -78,17 +78,17 @@ namespace RpgMap
                     return null;
                 foreach (Node neighbor in Neighbors)
                 {
-                    if (closedSet.Contains(neighbor))
+                    if (closedict.ContainsKey(neighbor))
                         continue;
 
                     int tentativeG = current.G + CalculateDistance(map, current, neighbor);
-                    if (!openSet.Contains(neighbor) || tentativeG < neighbor.G)
+                    if (!opendict.ContainsKey(neighbor) || tentativeG < neighbor.G)
                     {
                         neighbor.Parent = current;
                         neighbor.G = tentativeG;
                         neighbor.H = CalculateDistance(map, neighbor, goal);
-                        if (!openSet.Contains(neighbor))
-                            openSet.Add(neighbor);
+                        if (!opendict.ContainsKey(neighbor))
+                            opendict[neighbor] = 1;
                     }
                 }
             }
@@ -224,14 +224,14 @@ namespace RpgMap
                 return true;
 
             var pos = new ConfigPos(x, y);
-            return config.UnWalkList.Contains(pos);
+            return config.UnWalkList.ContainsKey(pos);
         }
 
-        public static bool IsObstacle(int x, int y, List<(int, int)> List)
+        public static bool IsObstacle(int x, int y, Dictionary<(int,int), MapActor> posdict)
         {
-            if(List.Contains((x,y)))
+            if(posdict.ContainsKey((x,y)))
                 return true;
-            foreach((int px, int py) in List)
+            foreach((int px, int py) in posdict.Keys)
             {
                 if(MapTool.CheckDistance(x, y, px, py, MapMgr.SphereRis * 2))
                     return true;
@@ -245,15 +245,14 @@ namespace RpgMap
             if (config == null)
                 return true;
             var pos = new ConfigPos(x, y);
-            if(config.UnWalkList.Contains(pos))
+            if(config.UnWalkList.ContainsKey(pos))
                 return true;
 
             // 玩家(动态障碍物)
-            List<(int, int)> List = MapCommon.GetGridePosList(map, x, y);
-            //List<(int, int)> List = MapCommon.GetMapPosList(map);
-            if(List.Contains((x,y)))
+            Dictionary<(int, int), MapActor> posDict = map.Aoi.GetGridePosList(map, x, y);
+            if(posDict.ContainsKey((x,y)))
                 return true;
-            foreach ((int px, int py) in List)
+            foreach ((int px, int py) in posDict.Keys)
             {
                 if (MapTool.GetDistance(x, y, px, py) < MapMgr.SphereRis * 2)
                     return true;

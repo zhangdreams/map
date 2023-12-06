@@ -130,7 +130,8 @@ namespace RpgMap
             {
                 monster.TarKey = (0, 0);
                 monster.doing.RemoveAt(0);
-                Log.W($"target dead remove fight doing:{monster.doing.Count}, {monster.doing[0]}");
+                if(monster.doing.Count > 0)
+                    Log.W($"target dead remove fight doing:{monster.doing.Count}, {monster.doing[0]}");
                 return null;
             }
             

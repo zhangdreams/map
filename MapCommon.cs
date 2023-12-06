@@ -107,10 +107,10 @@ namespace RpgMap
             return HurtMap;
         }
 
-        public static List<(int,int)> GetGridePosList(Map map, double x, double y)
+        public static Dictionary<(int,int), MapActor> GetGridePosList(Map map, double x, double y)
         {
             List<(int, long)> keys = map.Aoi.GetAoi(x, y);
-            List<(int, int)> Poslist = new();
+            Dictionary<(int, int), MapActor> posDict = new();
             foreach (var key in keys)
             {
                 var actor = GetActor(map, key);
@@ -118,23 +118,21 @@ namespace RpgMap
                     continue;
                 MapPos pos = actor.GetPos();
                 (int,int) p = ((int)pos.x, (int)pos.y);
-                if(!Poslist.Contains(p))
-                    Poslist.Add(p);
+                posDict[p] = actor;
             }
-            return Poslist;
+            return posDict;
         }
 
-        public static List<(int,int)> GetMapPosList(Map map)
+        public static Dictionary<(int, int), MapActor> GetMapPosList(Map map)
         {
-            List<(int, int)> PosList = new();
-            foreach(var actor in map.ActorMap.Values)
+            Dictionary<(int, int), MapActor> posDict = new();
+            foreach (var actor in map.ActorMap.Values)
             {
                 MapPos pos= actor.GetPos();
                 (int, int) p = ((int)pos.x, (int)pos.y);
-                if (!PosList.Contains(p))
-                    PosList.Add(p);
+                posDict[p] = actor;
             }
-            return PosList;
+            return posDict;
         }
 
         public static (int, int) RandomBornPos(Map map, int times)

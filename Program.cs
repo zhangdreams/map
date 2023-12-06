@@ -31,7 +31,7 @@ namespace RpgMap
             }
             MapMgr.ShowDict();
             //BossEnterMap(1);
-            DoMonsterEnterMap(1, 800, new Patrol2());
+            DoMonsterEnterMap(1, 2000, new Patrol2());
 
             while (MapMgr.Show != "c")
             {
@@ -113,6 +113,7 @@ namespace RpgMap
                     PursueDistance = config.PatrolDistance,
                     AttackDistance = config.AttackDistance,
                     map = map,
+                    AiTime = Time.Now2() + MapMgr.random.Next(200),
                 };
                 monster.doing.Add(doing);
                 Dictionary<int, ActorSkill> skills = new();

@@ -14,7 +14,7 @@ namespace RpgMap
         public int Width { get; set; } // 地图宽
 
         public Dictionary<(int,int), List<(int, long)>> Grides = new(); // 用来保存每一个格子的对象
-        //public Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
+        public Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
 
         public MapAoi(int Length, int Width) 
         {
@@ -47,13 +47,9 @@ namespace RpgMap
         }
         private List<(int, long)> GetGride((int,int) key)
         {
-            if (!Grides.ContainsKey(key))
-            {
-                Log.E($"not found gride {key}");
-                List<(int, long)> values = new();
-                return values;
-            }
-            return Grides[key];
+            if (Grides.TryGetValue(key, out var value))
+                return value;
+            return new List<(int, long)>();
         }
 
         // 返回某一个坐标点(格子)的九宫格索引
@@ -65,9 +61,9 @@ namespace RpgMap
         }
         private List<(int, int)> GetNeighbors(int GrideX, int GrideY)
         {
-            //var key = (GrideX, GrideY);
-            //if (Nerbors.ContainsKey(key))
-            //    return Nerbors[key];
+            var key = (GrideX, GrideY);
+            if(Nerbors.TryGetValue(key, out var neighbors))
+                return neighbors;
             List<(int, int)> values = new();
             for (int i = GrideX-1; i <= GrideX+1; i++)
             {
@@ -78,7 +74,7 @@ namespace RpgMap
                         values.Add(k);
                 }
             }
-            //Nerbors[key] = values;
+            Nerbors[key] = values;
             return values;
         }
 
@@ -147,6 +143,22 @@ namespace RpgMap
                 EnterArea(Type, ID, GrideX2, GrideY2 );
                 // todo 视野广播
             }
+        }
+
+        public Dictionary<(int, int), MapActor> GetGridePosList(Map map, double x, double y)
+        {
+            List<(int, long)> keys = GetAoi(x, y);
+            Dictionary<(int, int), MapActor> posDict = new();
+            foreach (var key in keys)
+            {
+                var actor = MapCommon.GetActor(map, key);
+                if (actor == null)
+                    continue;
+                MapPos pos = actor.GetPos();
+                (int, int) p = ((int)pos.x, (int)pos.y);
+                posDict[p] = actor;
+            }
+            return posDict;
         }
     }
 }

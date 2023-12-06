@@ -29,7 +29,7 @@ namespace RpgMap
         public int BornY { get; set; }
         public int MaxNum { get; set; }
         public string UnWalk { get; set; } = string.Empty;
-        public List<ConfigPos> UnWalkList { get; set; } = new();
+        public Dictionary<ConfigPos, int> UnWalkList { get; set; } = new();
     }
 
     internal class MapReader
@@ -58,7 +58,7 @@ namespace RpgMap
                 MatchCollection matches = Regex.Matches(conf.UnWalk, pattern);
                
                 //string[] coordinatePairs = conf.UnWalk.Split(',');
-                List<ConfigPos> posList = new();
+                Dictionary<ConfigPos, int> posdict = new();
                 foreach (Match match in matches.Cast<Match>())
                 {
                     var coordinatePair = match.Value;
@@ -69,12 +69,12 @@ namespace RpgMap
                         if (int.TryParse(parts[0], out int x) && int.TryParse(parts[1], out int y))
                         {
                             var pos = new ConfigPos(x,y);
-                            posList.Add(pos);
+                            posdict[pos] = 1;
                         }
                     }
                 }
-                Log.P($"posList:{posList.Count}");
-                conf.UnWalkList = posList;
+                Log.P($"posList:{posdict.Count}");
+                conf.UnWalkList = posdict;
                 mapConfigs[conf.MapID] = conf;
             }
             //foreach (var coordinatePair in mapConfigs)
@@ -97,7 +97,7 @@ namespace RpgMap
                 Log.R($"MaxNum: {c.MaxNum}");
                 Log.R($"UnwalkList:{c.UnWalkList.Count}");
                 Log.R($"unwalk pos:");
-                foreach (var v in c.UnWalkList)
+                foreach (var v in c.UnWalkList.Keys)
                     Console.Write($"{v.X},{v.Y};");
             }
             else

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 日志输出
+    /// </summary>
     internal class Log
     {
         public static void P()

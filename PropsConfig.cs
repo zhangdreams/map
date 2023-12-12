@@ -7,17 +7,23 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 怪物属性配置
+    /// </summary>
     internal class PropReader
     {
         public static Dictionary<int, Prop> PropList = new();
 
-        public static Prop? GetConfig(int PropID)
+        public static Prop? GetConfig(int propID)
         {
-            if(PropList.ContainsKey(PropID))
-                return PropList[PropID];
+            if(PropList.ContainsKey(propID))
+                return PropList[propID];
             return null;
         }
 
+        /// <summary>
+        /// 读取配置
+        /// </summary>
         public static void Read()
         {
             string json = File.ReadAllText("../../../config/props.json");
@@ -31,6 +37,10 @@ namespace RpgMap
             }
         }
 
+        /// <summary>
+        /// 配置输出展示
+        /// </summary>
+        /// <param name="index"></param>
         public static void Show(int index)
         {
             var config = GetConfig(index);

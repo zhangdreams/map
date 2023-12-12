@@ -8,6 +8,9 @@ using System.Xml.Linq;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 节点对象
+    /// </summary>
     class Node
     {
         public int X { get; } = 0;
@@ -26,11 +29,20 @@ namespace RpgMap
             Parent = null;
         }
 
+        /// <summary>
+        /// 返回是否到达一个节点
+        /// </summary>
+        /// <param name="other">目标节点</param>
+        /// <returns></returns>
         public bool Arrival(Node other)
         {
             return other.X == X && other.Y == Y;
         }
 
+        /// <summary>
+        /// 返回format后的节点坐标字符串
+        /// </summary>
+        /// <returns></returns>
         public string Show()
         {
             return $"({X},{Y})";
@@ -39,10 +51,21 @@ namespace RpgMap
 
     class MapPath
     {
+        /// <summary>
+        /// 寻路
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="start">起点</param>
+        /// <param name="goal">终点</param>
+        /// <returns>路径List or null</returns>
         public static List<Node>? FindPath(Map map, Node start, Node goal)
         {
             if ((start.X == goal.X || start.Y == goal.Y) && !ContainsObstacleBetween(map, start, goal))    // 中间没有障碍物，直接可达
                 return new() { goal };
+
+            List<Node>? ret = CheckIndirect(map, start, goal);
+            if (ret != null)
+                return ret;
 
             Dictionary<Node, int> opendict = new();
             Dictionary<Node, int> closedict = new();
@@ -73,10 +96,10 @@ namespace RpgMap
                 else
                     neighborMaps[(current.X, current.Y)] = step + 1;
 
-                List<Node> Neighbors = GetNeighbors(map, current, step);
-                if (Neighbors.Count <= 0)
+                List<Node> neighbors = GetNeighbors(map, current, step);
+                if (neighbors.Count <= 0)
                     return null;
-                foreach (Node neighbor in Neighbors)
+                foreach (Node neighbor in neighbors)
                 {
                     if (closedict.ContainsKey(neighbor))
                         continue;
@@ -96,6 +119,41 @@ namespace RpgMap
             return null; // No path found
         }
 
+        /// <summary>
+        /// 检查能否通过简单的中间点间接到达
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="start">起点</param>
+        /// <param name="goal">终点</param>
+        /// <returns></returns>
+        private static List<Node>? CheckIndirect(Map map, Node start, Node goal)
+        {
+            Node mid = new(start.X, goal.Y);
+            if(!ContainsObstacleBetween(map, start, mid)) 
+            { 
+                return new List<Node>() 
+                { 
+                    mid,
+                    goal
+                };
+            }
+            mid = new(goal.X, start.Y);
+            if (!ContainsObstacleBetween(map, start, mid))
+            {
+                return new List<Node>()
+                {
+                    mid,
+                    goal
+                };
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 通过node的parent返回一条路径
+        /// </summary>
+        /// <param name="node">路径点</param>
+        /// <returns></returns>
         private static List<Node> ReconstructPath(Node node)
         {
             List<Node> path = new();
@@ -107,6 +165,13 @@ namespace RpgMap
             return path;
         }
 
+        /// <summary>
+        /// 返回一个坐标点周围的坐标点 4向
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="node">坐标节点</param>
+        /// <param name="step">步长</param>
+        /// <returns></returns>
         public static List<Node> GetNeighbors(Map map, Node node, int step)
         {
             List<Node> neighbors = new ();
@@ -153,12 +218,13 @@ namespace RpgMap
             return neighbors;
         }
 
-        public static void AddPoint((int, int) P, ref List<(int, int)> list)
-        {
-            if(!list.Contains(P))
-                list.Add(P);
-        }
-
+        /// <summary>
+        /// 计算两个节点的移动代价
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="a">A点坐标</param>
+        /// <param name="b">B点坐标</param>
+        /// <returns></returns>
         private static int CalculateDistance(Map map, Node a, Node b)
         {
             int dx = a.X - b.X;
@@ -171,6 +237,13 @@ namespace RpgMap
             return distance;
         }
 
+        /// <summary>
+        /// 返回两个节点直线路径是否包含障碍物
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="start">起点</param>
+        /// <param name="end">终点</param>
+        /// <returns></returns>
         private static bool ContainsObstacleBetween(Map map, Node start, Node end)
         {
             // 检查两个节点之间的直线路径是否包含障碍物
@@ -206,6 +279,13 @@ namespace RpgMap
             return false; // 没有发现障碍物
         }
 
+        /// <summary>
+        /// 返回一个坐标是否合法
+        /// </summary>
+        /// <param name="MapID">地图id</param>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        /// <returns></returns>
         public static bool IsValidCoordinate(int MapID, int x, int y)
         {
             var config = MapReader.GetConfig(MapID);
@@ -217,9 +297,16 @@ namespace RpgMap
             return x >= 0 && x <= mapWidth && y >= 0 && y <= mapHeight;
         }
 
-        public static bool IsObstacle(int MapID, int x, int y)
+        /// <summary>
+        /// 返回一个坐标是否是固定阻挡 
+        /// </summary>
+        /// <param name="MapID">地图id</param>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        /// <returns></returns>
+        public static bool IsObstacle(int mapID, int x, int y)
         {
-            var config = MapReader.GetConfig(MapID);
+            var config = MapReader.GetConfig(mapID);
             if (config == null)
                 return true;
 
@@ -227,6 +314,13 @@ namespace RpgMap
             return config.UnWalkList.ContainsKey(pos);
         }
 
+        /// <summary>
+        /// 返回一个坐标是否是动态阻挡
+        /// </summary>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        /// <param name="posdict">动态阻挡坐标</param>
+        /// <returns></returns>
         public static bool IsObstacle(int x, int y, Dictionary<(int,int), MapActor> posdict)
         {
             if(posdict.ContainsKey((x,y)))
@@ -239,6 +333,14 @@ namespace RpgMap
             return false;
         }
 
+        /// <summary>
+        /// 返回一个坐标是否是阻挡
+        /// 相当于是上面两个的组合
+        /// </summary>
+        /// <param name="MapID">地图id</param>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        /// <returns></returns>
         public static bool IsObstacle(Map map, int x, int y)
         {
             var config = MapReader.GetConfig(map.MapID);

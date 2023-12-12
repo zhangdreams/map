@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 配置用坐标
+    /// </summary>
     public struct ConfigPos
     {
-        public int X { get; set; } = 0;
-        public int Y { get; set; } = 0;
+        public int X { get; } = 0;
+        public int Y { get; } = 0;
         public ConfigPos(int x, int y)
         {
             this.X = x;
@@ -19,6 +22,9 @@ namespace RpgMap
         }
     }
 
+    /// <summary>
+    /// 地图配置
+    /// </summary>
     public class MapConfig
     {
         public int MapID { get; set; }
@@ -36,18 +42,30 @@ namespace RpgMap
     {
         public static Dictionary<int, MapConfig> mapConfigs = new();
 
-        // 返回所有的地图配置IDList
+        /// <summary>
+        /// 返回所有的地图配置IDList
+        /// </summary>
+        /// <returns></returns>
         public static List<int> GetMapIDs()
         {
             return mapConfigs.Keys.ToList();
         }
 
+        /// <summary>
+        /// 返回指定id的地图配置
+        /// </summary>
+        /// <param name="mapID">地图id</param>
+        /// <returns></returns>
         public static MapConfig? GetConfig(int mapID)
         {
             if (mapConfigs.ContainsKey(mapID))
                 return mapConfigs[mapID];
             return null;
         }
+
+        /// <summary>
+        /// 从配置表读取配置
+        /// </summary>
         public static void Read()
         {
             string json = File.ReadAllText("../../../config/maps.json");
@@ -83,9 +101,13 @@ namespace RpgMap
             //}
         }
 
-        public static void ShowConfig(int MapID)
+        /// <summary>
+        /// 输出地图配置
+        /// </summary>
+        /// <param name="mapID"></param>
+        public static void ShowConfig(int mapID)
         {
-            var c = GetConfig(MapID);
+            var c = GetConfig(mapID);
             if (c != null)
             {
                 Log.R($"ID: {c.MapID}");
@@ -101,7 +123,7 @@ namespace RpgMap
                     Console.Write($"{v.X},{v.Y};");
             }
             else
-                Log.E($"config {MapID} not found");
+                Log.E($"config {mapID} not found");
         }
     }
 }

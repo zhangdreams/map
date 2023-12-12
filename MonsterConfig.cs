@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 怪物配置类
+    /// </summary>
     internal class MonsterConfig
     {
         public int ID { get; set; }    // ID
@@ -25,18 +28,30 @@ namespace RpgMap
     {
         public static Dictionary<int, MonsterConfig> MonsterList = new();
 
+        /// <summary>
+        /// 返回所有的怪物配置id
+        /// </summary>
+        /// <returns></returns>
         public static List<int> GetMonsterIDs()
         {
             return MonsterList.Keys.ToList();
         }
 
-        public static MonsterConfig? GetConfig(int MonsterID)
+        /// <summary>
+        /// 返回指定id的怪物配置
+        /// </summary>
+        /// <param name="monsterID"></param>
+        /// <returns></returns>
+        public static MonsterConfig? GetConfig(int monsterID)
         {
-            if(MonsterList.ContainsKey(MonsterID))
-                return MonsterList[MonsterID];
+            if(MonsterList.ContainsKey(monsterID))
+                return MonsterList[monsterID];
             return null;
         }
 
+        /// <summary>
+        /// 从配置读取
+        /// </summary>
         public static void Read()
         {
             string json = File.ReadAllText("../../../config/monsters.json");
@@ -50,9 +65,13 @@ namespace RpgMap
             }
         }
 
-        public static void Show(int ID)
+        /// <summary>
+        /// 配置输出展示
+        /// </summary>
+        /// <param name="id"></param>
+        public static void Show(int id)
         {
-            var config = GetConfig(ID);
+            var config = GetConfig(id);
             if (config != null)
             {
                 Log.R($"ID: {config.ID}");
@@ -63,12 +82,12 @@ namespace RpgMap
                 Log.R($"Pursue Distance: {config.PursueDistance}");
                 Log.R($"Attack Distance: {config.AttackDistance}");
                 Console.Write($"Skills : ");
-                foreach (var Sid in config.Skills)
-                    Console.Write($"{Sid} ,");
+                foreach (var sid in config.Skills)
+                    Console.Write($"{sid} ,");
                 Log.P();
             }
             else
-                Log.E($"config {ID} not found");
+                Log.E($"config {id} not found");
         }
     }
 }

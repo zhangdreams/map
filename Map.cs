@@ -17,32 +17,32 @@ namespace RpgMap
     internal class Map
     {
         //public int ID { get; set; } = 0;    // id
-        public int MapID { get; set; } = 0; // 地图ID
-        public string MapName { get; set; } = ""; // 地图名（常用来索引）
-        public int Line { get; set; } = 0;  // 分线
-        public int MapType { get; set; } = 0; // 地图类型
-        public long CreateTime { get; set; } = 0; // 地图创建时间
+        public int MapID { get; } = 0; // 地图ID
+        public string MapName { get; } = ""; // 地图名（常用来索引）
+        public int Line { get; } = 0;  // 分线
+        public int MapType { get; } = 0; // 地图类型
+        public long CreateTime { get; } = 0; // 地图创建时间
 
         private long LastTickTime { get; set; } = 0;
 
-        public Thread thread;   // 地图的线程
-        public MapAoi Aoi;  // 地图内Aoi对象
+        public Thread Thread { get; }   // 地图的线程
+        public MapAoi Aoi { get; }  // 地图内Aoi对象
 
-        public int RoleNum { get; set; } = 0; // 地图内玩家数量
-        public Dictionary<long, MapRole> Roles { get; set; } = new(); // 保存玩家实例
-        public int MonsterNum { get; set; } = 0;    // 地图内怪物数量
-        public Dictionary<long, MapMonster> Monsters { get; set; } = new(); 
-        public Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
-        public Dictionary<(int, long), (int, int)> ActorPosMap { get; set; } = new();
+        private int RoleNum { get; set; } = 0; // 地图内玩家数量
+        private Dictionary<long, MapRole> Roles { get; set; } = new(); // 保存玩家实例
+        private int MonsterNum { get; set; } = 0;    // 地图内怪物数量
+        private Dictionary<long, MapMonster> Monsters { get; set; } = new();
+        private Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
+        //private Dictionary<(int, long), (int, int)> ActorPosMap { get; set; } = new();
         //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
-        public List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
-        public long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
-        public int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
-        public Timer Timer;
-        public int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
-        public int LoopTick5000 { get; set; } = 1;
+        private List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
+        private long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
+        private int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
+        private Timer Timer;
+        private int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
+        private int LoopTick5000 { get; set; } = 1;
 
-        public static Dictionary<long, (double, double)> lastPos = new();
+        private Dictionary<long, (double, double)> lastPos = new(); 
 
         public Map(int mapID, string mapName, int line) 
         {
@@ -50,13 +50,13 @@ namespace RpgMap
             this.MapID = mapID;
             this.MapName = mapName;
             this.Line = line;
-            CreateTime = Time.Now();
+            CreateTime = Time.NowSec();
             MapType = 1;
 
             // 创建线程
             Thread thread = new(InitMap);
             thread.Start();
-            this.thread = thread;
+            Thread = thread;
 
             var config = MapReader.GetConfig(mapID);
             // 初始化AOI
@@ -64,31 +64,38 @@ namespace RpgMap
             Log.P($"create new map {mapID}, mapname:{mapName}");
         }
 
+        /// <summary>
+        ///  初始化地图、设置一个轮询的timer
+        /// </summary>
         public void InitMap()
         {
-            LastTickTime = Time.Now2();
+            LastTickTime = Time.NowMillSec();
             // 增加一个轮询
-            Timer cTimer = new (MapLoop, null, 200, 100);
+            Timer cTimer = new (MapLoop, null, 500, 100);
             Timer = cTimer;
         }
 
+        /// <summary>
+        /// 地图轮询回调
+        /// </summary>
+        /// <param name="state"></param>
         private void MapLoop(object? state)
         {
             try
             {
-                long Now2 = Time.Now2();
+                long nowMillSec = Time.NowMillSec();
                 // 100ms 一次轮询
-                LoopMoving(Now2);
-                LoopSkills(Now2);
-                LoopBuff(Now2);
-                LoopMonsterAI(Now2);
+                LoopMoving(nowMillSec);
+                LoopSkills(nowMillSec);
+                LoopBuff(nowMillSec);
+                LoopMonsterAI(nowMillSec);
 
                 //  200ms 轮询
                 if (LoopTick200 == 2)
                 {
                     LoopTick200 = 1;
                     LoopTick5000 += 1;
-                    LoopMonsterDead(Now2);
+                    LoopMonsterDead(nowMillSec);
                 }
                 else
                 {
@@ -96,13 +103,13 @@ namespace RpgMap
                     // todo 200ms 轮询的可以放一些在这里处理，平衡一下压力
                 }
 
-                // 3s 轮询 这里用来输入一些数据
+                // 3s 轮询 这里用来输出一些数据
                 if (LoopTick5000 >= 25)
                 {
                     LoopTick5000 = 1;
                     ShowDict();
                 }
-                LastTickTime = Now2;
+                LastTickTime = nowMillSec;
             }
             catch(Exception e)
             {
@@ -110,45 +117,141 @@ namespace RpgMap
             }
         }
 
+        /// <summary>
+        /// 返回一个monster实例ID
+        /// 生成monster实例的时候使用
+        /// </summary>
+        /// <returns></returns>
         public long GetMaxMonsterID()
         {
+            if (MaxMonsterID >= long.MaxValue)
+                MaxMonsterID = 1;
             return MaxMonsterID++;
         }
 
+        /// <summary>
+        /// 返回一个阵营ID
+        /// </summary>
+        /// <returns></returns>
         public int GetMaxCamp()
         {
+            if(MaxCamp >= int.MaxValue)
+                MaxCamp = 1;
             return MaxCamp++;
         }
 
-        // 玩家进入地图
-        public void DoRoleEnter(MapRole MapRole, MapActor MapActor)
+        /// <summary>
+        /// 返回地图内actor
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<(int, long), MapActor> GetMapActors()
+        {
+            return ActorMap;
+        }
+
+        /// <summary>
+        /// 返回地图内的monster对象
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<long, MapMonster> GetMapMonsters()
+        {
+            return Monsters;
+        }
+
+        /// <summary>
+        /// 返回地图内的指定的monster对象
+        /// </summary>
+        /// <param name="id">monster id </param>
+        /// <returns></returns>
+        public MapMonster GetMapMonster(long id)
+        {
+            return Monsters[id];
+        }
+
+        /// <summary>
+        /// 返回地图内MapRole对象
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<long, MapRole> GetMapRoles()
+        {
+            return Roles;
+        }
+
+        /// <summary>
+        /// 返回指定的MapRole
+        /// </summary>
+        /// <param name="id">role id</param>
+        /// <returns></returns>
+        public MapRole GetMapRole(long id)
+        {
+            return Roles[id];
+        }
+
+        /// <summary>
+        /// 根据类型返回对象
+        /// </summary>
+        /// <param name="type">1:role 2:monster</param>
+        /// <param name="id">id </param>
+        /// <returns></returns>
+        //public object? GetActor(int type, long id)
+        //{
+        //    switch (type)
+        //    {
+        //        case 1:
+        //            return GetMapRole(id);
+        //        case 2:
+        //            return GetMapMonster(id);
+        //        default: 
+        //            return null;
+        //    }
+        //}
+
+        /// <summary>
+        /// 返回地图内玩家数量
+        /// </summary>
+        /// <returns></returns>
+        public int GetRoleNum()
+        {
+            return RoleNum;
+        }
+
+        /// <summary>
+        /// 玩家进入地图
+        /// </summary>
+        /// <param name="mapRole"> mapRole实例类 </param>
+        /// <param name="mapActor"> mapActor 实例类 </param>
+        public void DoRoleEnter(MapRole mapRole, MapActor mapActor)
         {
 
             var config = MapReader.GetConfig(MapID);
             Random r = MapMgr.random;
             int PosX = r.Next(Math.Max(config.BornX-3, 0), Math.Min(config.BornX+3, config.Width));
             int PosY = r.Next(Math.Max(config.BornY-3, 0), Math.Min(config.BornY+3, config.Height));
-            MapRole.PosX = PosX;
-            MapRole.PosY = PosY;
-            Roles[MapRole.ID] = MapRole;
+            mapRole.PosX = PosX;
+            mapRole.PosY = PosY;
+            Roles[mapRole.ID] = mapRole;
             RoleNum++;
-            ActorMap[(1, MapActor.ID)] = MapActor;
-            Aoi.EnterArea(1, MapRole.ID, PosX, PosY);
+            ActorMap[(1, mapActor.ID)] = mapActor;
+            Aoi.EnterArea(1, mapRole.ID, PosX, PosY);
             //ActorPosMap[(1, MapActor.ID)] = ((int)PosX, (int)PosY);
             // todo
         }
 
-        public void DoRoleExit(long RoleID)
+        /// <summary>
+        /// 玩家退出地图
+        /// </summary>
+        /// <param name="roleID"> 角色ID </param>
+        public void DoRoleExit(long roleID)
         {
-            var actor = MapCommon.GetActor(this, (1, RoleID));
+            var actor = MapCommon.GetActor(this, (1, roleID));
             if (actor == null)
                 return;
-            Roles.Remove(RoleID);
-            ActorMap.Remove((1, RoleID));
+            Roles.Remove(roleID);
+            ActorMap.Remove((1, roleID));
             RoleNum --;
             MapPos pos = actor.GetPos();
-            Aoi.ExitArea(1, RoleID, pos.x, pos.y);
-            //ActorPosMap.Remove((1, RoleID));
+            Aoi.ExitArea(1, roleID, pos.x, pos.y);
+            //ActorPosMap.Remove((1, roleID));
             if (RoleNum == 0 && Line > 0)  
             {
                 Timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -157,49 +260,75 @@ namespace RpgMap
             }
         }
 
-        public void DoMonsterEnter(MapMonster monster, MapActor MapActor)
+        /// <summary>
+        /// 怪物进入地图处理
+        /// </summary>
+        /// <param name="monster"> mapMonster 实例类 </param>
+        /// <param name="mapActor"> mapActor 实例类 </param>
+        public void DoMonsterEnter(MapMonster monster, MapActor mapActor)
         {
             Monsters[monster.ID] = monster;
             MonsterNum ++;
             RoleNum ++; // todo 这里暂时把怪物当做玩家计数
-            ActorMap[(2, MapActor.ID)] = MapActor;
+            ActorMap[(2, mapActor.ID)] = mapActor;
             Aoi.EnterArea(2, monster.ID, monster.PosX, monster.PosY);
             //ActorPosMap[(1, MapActor.ID)] = ((int)monster.PosX, (int)monster.PosY);
         }
-        public void DoMonsterExit(long MonsterID)
+
+        /// <summary>
+        /// 怪物退出地图
+        /// </summary>
+        /// <param name="monsterID"> 怪物实例ID</param>
+        public void DoMonsterExit(long monsterID)
         {
-            var actor = MapCommon.GetActor(this, (2, MonsterID));
+            var actor = MapCommon.GetActor(this, (2, monsterID));
             if (actor == null)
                 return;
-            Monsters.Remove(MonsterID);
-            ActorMap.Remove((2,MonsterID));
+            Monsters.Remove(monsterID);
+            ActorMap.Remove((2, monsterID));
             MonsterNum --;
             MapPos pos = actor.GetPos();
-            Aoi.ExitArea(2, MonsterID, pos.x, pos.y);
+            Aoi.ExitArea(2, monsterID, pos.x, pos.y);
             //ActorPosMap.Remove((2, MonsterID));
-            DoRoleExit(MonsterID);  // todo 这里暂时把怪物当做玩家计数
+            DoRoleExit(monsterID);  // todo 这里暂时把怪物当做玩家计数
         }
 
-        public long DoAddHP(int ActorType, long ActorID, int Add)
+        /// <summary>
+        /// 加血处理
+        /// </summary>
+        /// <param name="actorType"> actor 类型 </param>
+        /// <param name="actorID"> actor id</param>
+        /// <param name="add"> 增加血量 </param>
+        /// <returns></returns>
+        public long DoAddHP(int actorType, long actorID, int add)
         {
-            long NewHp = 0;
-            var Key = (ActorType, ActorID);
-            if (ActorMap.ContainsKey(Key))
+            long newHp = 0;
+            var key = (actorType, actorID);
+            if (ActorMap.ContainsKey(key))
             {
-                MapActor Actor = ActorMap[Key];
-                NewHp = Actor.DoAddHP(Add);
+                MapActor Actor = ActorMap[key];
+                newHp = Actor.DoAddHP(add);
             }
-            return NewHp;
+            return newHp;
         }
 
-        public long DoDecHP(int ActorType, long ActorID, int Dec, int SrcType, long SrcActorID)
+        /// <summary>
+        /// 扣血处理
+        /// </summary>
+        /// <param name="actorType"> actor 类型 </param>
+        /// <param name="actorID"> actor id</param>
+        /// <param name="dec"> 扣血值 </param>
+        /// <param name="srcType"> 来源actor类型 </param>
+        /// <param name="srcActorID">来源actor ID </param>
+        /// <returns></returns>
+        public long DoDecHP(int actorType, long actorID, int dec, int srcType, long srcActorID)
         {
             long NewHp = 0;
-            var Key = (ActorType, ActorID);
+            var Key = (actorType, actorID);
             if (ActorMap.ContainsKey(Key))
             {
                 MapActor Actor = ActorMap[Key];
-                NewHp = Actor.DoDecHP(Dec, SrcType, SrcActorID);
+                NewHp = Actor.DoDecHP(dec, srcType, srcActorID);
             }
             return NewHp;
         }
@@ -210,147 +339,160 @@ namespace RpgMap
         //    return ActorPosMap.Values.ToList();
         //}
 
-        // 轮询检查移动
-        public void LoopMoving(long Now2)
+        /// <summary>
+        /// 轮询检查移动 更新位置
+        /// </summary>
+        /// <param name="nowMillSec"> 毫秒级时间戳 </param>
+        public void LoopMoving(long nowMillSec)
         {
             try
             {
-                LoopMoving2(Now2);
+                LoopMoving2(nowMillSec);
             }catch (Exception e)
             {
                 Log.E(e.ToString());
             }
         }
-        public void LoopMoving2(long Now2)
+        public void LoopMoving2(long nowMillSec)
         {
-            int upTime = (int)(Now2 - LastTickTime);
+            int upTime = (int)(nowMillSec - LastTickTime);
             foreach (MapActor Actor in ActorMap.Values)
             {
-                if (Actor.MoveState())
+                if (Actor.IsAlive() && Actor.MoveState())
                 {
                     MapPos Pos = Actor.GetPos();
-                    (double NewX, double NewY) = Actor.DoMoving(Now2, upTime);
+                    (double NewX, double NewY) = Actor.DoMoving(nowMillSec, upTime);
                     Aoi.DoMove(Actor.Type, Actor.ID, Pos.x, Pos.y, NewX, NewY);
                     //ActorPosMap[(Actor.Type, Actor.ID)] = ((int)NewX, (int)NewY);
                 }
             }
         }
 
-        public void AddSkillEntity(MapSkill Skill)
+        /// <summary>
+        /// 增加一个技能实例
+        /// </summary>
+        /// <param name="skill">技能实例 </param>
+        public void AddSkillEntity(MapSkill skill)
         {
-            SkillList.Add(Skill);
+            SkillList.Add(skill);
             if (SkillList.Count % 100 == 0)
                 Log.E($"to much skill entity {SkillList.Count}");
             // 视野同步
         }
 
-        // 技能轮询
-        public void LoopSkills(long Now2)
+        /// <summary>
+        /// 技能轮询
+        /// </summary>
+        /// <param name="nowMillSec">毫秒级时间戳</param>
+        public void LoopSkills(long nowMillSec)
         {
             try
             { 
-                LoopSkills2(Now2);
+                LoopSkills2(nowMillSec);
             }catch (Exception e)
             {
                 Log.E(e.ToString());
             }
         }
-        public void LoopSkills2(long Now2)
+        public void LoopSkills2(long nowMillSec)
         {
             List<MapSkill> preDel = new();
             for(int i = 0; i < SkillList.Count; i++)
             {
                 if (SkillList[i] == null)
                     continue;
-                var Skill = SkillList[i];
-                (int, long) SrcKey = (Skill.ActorType, Skill.ActorID);
-                if (!ActorMap.ContainsKey(SrcKey))
+                var skill = SkillList[i];
+                (int, long) srcKey = (skill.ActorType, skill.ActorID);
+                if (!ActorMap.ContainsKey(srcKey))
                 {
                     // 技能拥有者不在地图
-                    preDel.Add(Skill);
+                    preDel.Add(skill);
                     continue;
                 }
-                MapActor SrcActor = ActorMap[SrcKey];
+                MapActor srcActor = ActorMap[srcKey];
 
-                SkillConfig config = Skill.SkillConfig;
-                int wave = Skill.CurWave;
+                SkillConfig config = skill.SkillConfig;
+                int wave = skill.CurWave;
                 if (wave + 1 > config.Waves.Count)   // 技能结束
                 {
-                    preDel.Add(Skill);
+                    preDel.Add(skill);
                     continue;
                 }
                 int interval = config.Waves[wave];
                 // 是否达到触发下一波次伤害时间
-                if (Skill.SkillTime + interval >= Now2) 
+                if (skill.SkillTime + interval >= nowMillSec) 
                     continue;
 
-                Dictionary<(int, long), MapActor> HurtMap = MapCommon.FilterHurt(this, Skill, SrcActor);
-                List<MapEffect> EffectMaps = new();
-                foreach(var TarActor in HurtMap.Values)
+                Dictionary<(int, long), MapActor> hurtMap = MapCommon.FilterHurt(this, skill, srcActor);
+                List<MapEffect> effectMaps = new();
+                foreach(var tarActor in hurtMap.Values)
                 {
-                    List<MapEffect> Effects = MapFight.DoFight(SrcActor, TarActor, config);
+                    List<MapEffect> effects = MapFight.DoFight(srcActor, tarActor, config);
                     if(config.TBuffs.Count > 0)
                     {
                         // 可能会对目标添加buff
-                        foreach (var TarEffect in EffectMaps)
+                        foreach (var tarEffect in effectMaps)
                         {
-                            var TActor = MapCommon.GetActor(this, (TarEffect.ActorType, TarEffect.ActorID));
-                            TActor.AddSkillBuff(config.TBuffs);
+                            var tActor = MapCommon.GetActor(this, (tarEffect.ActorType, tarEffect.ActorID));
+                            tActor.AddSkillBuff(config.TBuffs);
                         }
                     }
-                    EffectMaps.AddRange(Effects);
+                    effectMaps.AddRange(effects);
                 }
-                Skill.CurWave++;
-                Skill.SkillTime = Now2;
+                skill.CurWave++;
+                skill.SkillTime = nowMillSec;
 
-                // todo 同步效果 sync EffectMaps
+                // todo 同步效果 sync effectMaps
             }
-            foreach(var skill in preDel)
+            foreach (var skill in preDel)
                 _ = SkillList.Remove(skill);
         }
 
-
-        public void LoopMonsterAI(long Now2)
+        /// <summary>
+        /// 怪物AI轮询
+        /// </summary>
+        /// <param name="nowMillSec">毫秒级时间戳</param>
+        public void LoopMonsterAI(long nowMillSec)
         {
             try
             {
-                LoopMonsterAI2(Now2);
+                LoopMonsterAI2(nowMillSec);
             }
             catch (Exception e)
             {
                 Log.E(e.ToString());
             }
         }
-        public void LoopMonsterAI2(long Now2)
+        public void LoopMonsterAI2(long nowMillSec)
         {
             List<long> removeKeys = new();
             foreach(var monster in Monsters.Values)
             {
-                var Actor = MapCommon.GetActor(this, (2, monster.ID));
-                if (Actor == null)
+                var actor = MapCommon.GetActor(this, (2, monster.ID));
+                if (actor == null)
                 {
                     removeKeys.Add(monster.ID);
                     continue;
                 }
-                if(Now2 < monster.AiTime)
+                if(nowMillSec < monster.AiTime)
                     continue;   // 未到AI触发时间
-                monster.AiTime = Now2 + 200;
+                monster.AiTime = nowMillSec + 300;
 
-                if (!Actor.IsAlive())
+                if (!actor.IsAlive())
                     continue;
 
                 var doingList = monster.doing;
                 if (doingList.Count <= 0) // 添加一个巡逻节点
                 {
                     MoveTo moveTo = MonsterAI.Patrol(monster);
-                    DoMoveTo(Actor, moveTo, ref doingList);
+                    DoMoveTo(actor, moveTo, ref doingList);
                     continue;
                 }
                 var doing = doingList[0];
                 if (doing is Idle)  // 添加一个巡逻节点
                 {
                     MoveTo moveTo = MonsterAI.Patrol(monster);
-                    DoMoveTo(Actor, moveTo, ref doingList);
+                    DoMoveTo(actor, moveTo, ref doingList);
                     continue;
                 }
                 else if (doing is MoveTo)  // 继续移动
@@ -362,34 +504,34 @@ namespace RpgMap
                         var TActor = MapCommon.GetActor(this, monster.TarKey);
                         if (TActor == null)  // 追击目标不存在了
                         {
-                            doingList.Remove(doing);
+                            doingList.RemoveAt(0);
                             monster.TarKey = (0, 0);
                             continue;
                         }
                         MapPos pos = TActor.GetPos();
                         // 超出追击距离或目标死亡
-                        if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance) || !TActor.IsAlive())
+                        if (!MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.GetPursueDistance()) || !TActor.IsAlive())
                         {
-                            doingList.Remove(doing);
+                            doingList.RemoveAt(0);
                             monster.TarKey = (0, 0);
                             MoveTo moveto = MonsterAI.ReturnBorn(monster);  // 回出生点
-                            DoMoveTo(Actor, moveto, ref doingList);
+                            DoMoveTo(actor, moveto, ref doingList);
                         }
 
                         // 到达攻击距离
-                        if (MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
+                        if (MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.GetAttackDistance()))
                             monster.StopMove();
                     }
-                    else if (Actor.IsArrival())
-                        doingList.Remove(doing);
+                    else if (actor.IsArrival())
+                        doingList.RemoveAt(0);
                     else if (!monster.GetMoveState())
-                        doingList.Remove(doing);
+                        doingList.RemoveAt(0);
                     continue;
                 }
                 else if(doing is Patrol)
                 {
                     MoveTo moveto = MonsterAI.Patrol(monster);
-                    DoMoveTo(Actor, moveto, ref doingList);
+                    DoMoveTo(actor, moveto, ref doingList);
                 }
                 else if(doing is Patrol2)
                 {
@@ -397,7 +539,7 @@ namespace RpgMap
                     if(Next == null)
                     {
                         MoveTo moveto = MonsterAI.Patrol(monster);
-                        DoMoveTo(Actor, moveto, ref doingList);
+                        DoMoveTo(actor, moveto, ref doingList);
                     }
                     else
                         doingList.Insert(0, Next);
@@ -405,7 +547,7 @@ namespace RpgMap
                 }
                 else if(doing is Pursue pursue)    // 追击
                 {
-                    doingList.Remove(doing);
+                    doingList.RemoveAt(0);
                     (int, long) key = pursue.Key;
                     var TActor = MapCommon.GetActor(this, key);
                     if (TActor == null)  // 追击目标不存在了
@@ -420,7 +562,7 @@ namespace RpgMap
                     }
 
                     MapPos pos = TActor.GetPos();
-                    if(TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.AttackDistance))
+                    if(TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.GetAttackDistance()))
                     {
                         if(doingList.Count >= 2)
                         {
@@ -437,18 +579,18 @@ namespace RpgMap
                             doingList.Insert(0, fight);
                         }
                     }
-                    else if (TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.PursueDistance))
+                    else if (TActor.IsAlive() && MapTool.CheckDistance(monster.PosX, monster.PosY, pos.x, pos.y, monster.GetPursueDistance()))
                     {
-                        (double rx, double ry) = MapTool.GetPatrolPos(this, pos, monster.AttackDistance);
+                        (double rx, double ry) = MapTool.GetPatrolPos(this, pos, monster.GetAttackDistance());
                         MoveTo moveto = new(rx, ry);
-                        DoMoveTo(Actor, moveto, ref doingList);
+                        DoMoveTo(actor, moveto, ref doingList);
                     }
                     else
-                    { 
+                    {
                         // 超出追击距离或目标已死亡
-                        doingList.Remove(doing);
+                        doingList.RemoveAt(0);
                         MoveTo moveto = MonsterAI.ReturnBorn(monster);
-                        DoMoveTo(Actor, moveto, ref doingList);
+                        DoMoveTo(actor, moveto, ref doingList);
                     }
                     continue;
                 }else if(doing is Fight)
@@ -466,7 +608,7 @@ namespace RpgMap
                             if (SkillID > 0)
                             {
                                 var TActor = MapCommon.GetActor(this, monster.TarKey); // Fight中已过滤掉目标死亡或不存在的情况
-                                Actor.DoUseSkill(SkillID, TActor.GetPos(), new List<(int, long)> { monster.TarKey });
+                                actor.DoUseSkill(SkillID, TActor.GetPos(), new List<(int, long)> { monster.TarKey });
                             }
                             continue;
                         default:
@@ -478,20 +620,30 @@ namespace RpgMap
                 Monsters.Remove(ID);
         }
 
-        public static void DoMoveTo(MapActor Actor, MoveTo moveto, ref ArrayList doingList)
+        /// <summary>
+        /// 怪物开始往目标点移动
+        /// </summary>
+        /// <param name="actor">怪物实例对象</param>
+        /// <param name="moveto">目标坐标类</param>
+        /// <param name="doingList">待做列表</param>
+        public static void DoMoveTo(MapActor actor, MoveTo moveto, ref ArrayList doingList)
         {
-            if (Actor.DoStartMove(moveto.X, moveto.Y))
+            if (actor.DoStartMove(moveto.X, moveto.Y))
                 doingList.Insert(0, moveto);
         }
 
-        public void LoopBuff(long Now2)
+        /// <summary>
+        /// buff轮询
+        /// </summary>
+        /// <param name="nowMillSec">毫秒级时间戳</param>
+        public void LoopBuff(long nowMillSec)
         {
             try
             {
                 foreach(var actor in ActorMap.Values)
                 {
-                    if(actor.Buffs.Count > 0)
-                        actor.LoopBuff(Now2);
+                    if(actor.GetBuffs().Count > 0)
+                        actor.LoopBuff(nowMillSec);
                 }
             }catch (Exception e)
             {
@@ -499,15 +651,19 @@ namespace RpgMap
             }
         }
 
-        public void LoopMonsterDead(long Now2)
+        /// <summary>
+        /// 怪物死亡轮询
+        /// </summary>
+        /// <param name="nowMillSec">毫秒级时间戳</param>
+        public void LoopMonsterDead(long nowMillSec)
         {
             try
             {
                 foreach (var monster in Monsters.Values)
                 {
                     var config = MonsterReader.GetConfig(monster.MonsterID);
-                    if(monster.State == 0 && config.RebornTime > 0)
-                        monster.LoopDead(Now2, config.RebornTime);
+                    if(!monster.IsAlive() && config.RebornTime > 0)
+                        monster.LoopDead(nowMillSec, config.RebornTime);
                 }    
             }
             catch (Exception e)
@@ -516,9 +672,12 @@ namespace RpgMap
             }
         }
 
+        /// <summary>
+        /// 输出怪物当前状态
+        /// </summary>
         public void ShowDict()
         {
-            string ShowModel = MapMgr.Show;
+            string ShowModel = MapMgr.ShowData;
             switch (ShowModel)
             {
                 case "1":
@@ -544,10 +703,10 @@ namespace RpgMap
                     Log.E($"monster ({n}) has dead");
                     continue;
                 }
-                Log.P($"monster ({n++}) :");
-                Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.HP / monster.MaxHp * 100}%,");
+                Log.P($"{MapName} monster ({n++}) :");
+                Log.W($"  ID:{monster.ID}, monsterID:{monster.MonsterID}; {monster.PosX},{monster.PosY}; isAlive :{monster.IsAlive()} curHp:{(float)monster.GetHP() / monster.GetMaxHP() * 100}%,");
                 Log.W($"  doingList {monster.doing.Count}; target:{monster.TarKey}");
-                if (monster.doing.Count > 0)
+                if (monster.doing.Count > 0 && monster.doing[0] != null)
                 {
                     ShowDoing(monster.doing[0]);
                     lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
@@ -565,15 +724,19 @@ namespace RpgMap
             Log.P();
         }
 
-        public void ShowBoss(long ID)
+        /// <summary>
+        ///  输出某一个boss的状态
+        /// </summary>
+        /// <param name="id">实例ID</param>
+        public void ShowBoss(long id)
         {
-            Monsters.TryGetValue(ID, out var monster);
+            Monsters.TryGetValue(id, out var monster);
             if (monster == null)
             {
-                Log.E($"could not find monster : {ID}");
+                Log.E($"could not find monster : {id}");
                 return;
             }
-            Log.P($"monster Target Pos {(int)monster.TargetX},{(int)monster.TargetY}; isMoving:{monster.GetMoveState()}, target:{monster.TarKey}");
+            Log.P($"{MapName} monster Target Pos {(int)monster.TargetX},{(int)monster.TargetY}; isMoving:{monster.GetMoveState()}, target:{monster.TarKey}");
             foreach(var d in monster.doing)
             {
                 Log.P($"doing : {d}");
@@ -581,6 +744,11 @@ namespace RpgMap
             }
         }
 
+        /// <summary>
+        /// 输出待做的内容
+        /// </summary>
+        /// <param name="doing">待做List</param>
+        /// <returns></returns>
         public static object ShowDoing(object doing)
         {
             switch(doing)

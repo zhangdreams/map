@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 地图管理类
+    /// </summary>
     internal class MapMgr
     {
         public static Dictionary<string, Map> mapDic = new();
@@ -14,10 +17,16 @@ namespace RpgMap
         //private static int MapID = 0;
         public static readonly double SphereRis = 0.5;  // 碰撞球半径(0表示无视碰撞)
         public static Random random = new();
-        public static string Show { get; set; } = "";
+        public static string ShowData { get; set; } = "";
 
         public MapMgr() {}
 
+        /// <summary>
+        /// 创建一个地图
+        /// 如果有该id的地图则创建一个分线
+        /// </summary>
+        /// <param name="mapID">地图ID</param>
+        /// <returns></returns>
         public static Map CreateMap(int mapID)
         {
             string mapName = MapTool.GetNormalName(mapID);
@@ -29,10 +38,26 @@ namespace RpgMap
             }
             return CreateMap(mapID, mapName, line);
         }
+
+        /// <summary>
+        /// 根据地图ID和地图名创建地图
+        /// 分线ID为0
+        /// </summary>
+        /// <param name="mapID">地图ID</param>
+        /// <param name="mapName">地图名</param>
+        /// <returns></returns>
         public static Map? CreateMap(int mapID, string mapName)
         {
             return CreateMap(mapID, mapName, 0);
         }
+
+        /// <summary>
+        /// 根据地图ID、地图名和分线创建地图
+        /// </summary>
+        /// <param name="mapID">地图ID</param>
+        /// <param name="mapName">地图名</param>
+        /// <param name="line">分线ID</param>
+        /// <returns></returns>
         public static Map? CreateMap(int mapID, string mapName, int line)
         {
             if (mapDic.ContainsKey(mapName))
@@ -51,7 +76,11 @@ namespace RpgMap
             return map;
         }
 
-        // 返回一个可用的分线
+        /// <summary>
+        /// 返回一个可用的分线
+        /// </summary>
+        /// <param name="mapID">地图ID</param>
+        /// <returns></returns>
         public static int GetMapLine(int mapID)
         {
             int line = 0;
@@ -63,15 +92,23 @@ namespace RpgMap
             return line + 1;
         }
 
-        // 根据地图名返回一个地图对象
+        /// <summary>
+        /// 根据地图名返回一个地图对象
+        /// </summary>
+        /// <param name="mapName">地图名</param>
+        /// <returns></returns>
         public static Map? GetMap(string mapName)
         {
-            if (mapDic.ContainsKey(mapName))
-                return mapDic[mapName];
+            if (mapDic.TryGetValue(mapName, out var map))
+                return map;
             return null;
         }
-        // 返回一个可以进入的地图
-        // 有可进入的则直接返回，没有则新创建一个地图
+        /// <summary>
+        /// 返回一个可以进入的地图
+        /// 有可进入的则直接返回，没有则新创建一个地图
+        /// </summary>
+        /// <param name="mapID">地图id</param>
+        /// <returns></returns>
         public static Map GetMap(int mapID)
         {
             var config = MapReader.GetConfig(mapID);
@@ -79,12 +116,16 @@ namespace RpgMap
             list ??= new();
             foreach (Map map in list)
             {
-                if (map.RoleNum < config.MaxNum)
+                if (map.GetRoleNum() < config.MaxNum)
                     return map;
             }
             return CreateMap(mapID);
         }
 
+        /// <summary>
+        /// 删除地图 
+        /// </summary>
+        /// <param name="map">需要删除的地图对象</param>
         public static void DelMap(Map map)
         {
             mapDic.Remove(map.MapName);
@@ -119,7 +160,10 @@ namespace RpgMap
         //    }
         //}
 
-        public static void ShowDict()
+        /// <summary>
+        /// 输出地图信息
+        /// </summary>
+        public static void ShowMapDict()
         {
             foreach (var map in mapDic.Values) 
             { 

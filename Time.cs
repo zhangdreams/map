@@ -8,16 +8,22 @@ namespace RpgMap
 {
     internal class Time
     {
-        // 返回当前时间戳 (秒）
-        public static long Now()
+        /// <summary>
+        /// 返回当前时间戳 (秒）
+        /// </summary>
+        /// <returns></returns>
+        public static long NowSec()
         {
             DateTimeOffset now = DateTimeOffset.Now;
             long Seconds = now.ToUnixTimeSeconds();
             return Seconds;
         }
 
-        // 返回当前时间戳 (毫秒）
-        public static long Now2()
+        /// <summary>
+        /// 返回当前时间戳 (毫秒）
+        /// </summary>
+        /// <returns></returns>
+        public static long NowMillSec()
         {
             DateTimeOffset now = DateTimeOffset.Now;
             long millSeconds = now.ToUnixTimeMilliseconds();

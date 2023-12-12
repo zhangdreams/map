@@ -20,6 +20,9 @@ namespace RpgMap
         public string Func { get; set; } = ""; // 效果函数(属性类用来返回改变的属性索引)
     }
 
+    /// <summary>
+    /// buff配置读取
+    /// </summary>
     internal class BuffReader
     {
         public static Dictionary<int, BuffConfig> BuffConfigs = new();
@@ -29,13 +32,21 @@ namespace RpgMap
             return BuffConfigs.Keys.ToList();
         }
 
-        public static BuffConfig? GetConfig(int BuffID)
+        /// <summary>
+        /// 返回指定buff对应的配置
+        /// </summary>
+        /// <param name="buffId"></param>
+        /// <returns></returns>
+        public static BuffConfig? GetConfig(int buffId)
         {
-            if(BuffConfigs.ContainsKey(BuffID))
-                return BuffConfigs[BuffID];
+            if(BuffConfigs.ContainsKey(buffId))
+                return BuffConfigs[buffId];
             return null;
         }
 
+        /// <summary>
+        /// 读取配置
+        /// </summary>
         public static void Read()
         {
             string json = File.ReadAllText("../../../config/buffs.json");
@@ -44,13 +55,17 @@ namespace RpgMap
             {
                 BuffConfigs[conf.BuffID] = conf;
 
-                // Show(conf.BuffID);
+                // ShowConfig(conf.BuffID);
             }
         }
 
-        public static void Show(int BuffID)
+        /// <summary>
+        /// 输出配置
+        /// </summary>
+        /// <param name="buffId">buffid </param>
+        public static void ShowConfig(int buffId)
         {
-            var config = GetConfig(BuffID);
+            var config = GetConfig(buffId);
             if (config != null)
             {
                 Log.P($"BuffID: {config.BuffID}");

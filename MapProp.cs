@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 战斗属性
+    /// </summary>
     public class Prop
     {
         public int Index { get; set; } = 0; //配置ID用
@@ -19,6 +22,9 @@ namespace RpgMap
 
         }
 
+        /// <summary>
+        /// 属性输出展示
+        /// </summary>
         public void Show()
         {
             Log.R($"prop.HP : {HP}");

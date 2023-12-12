@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// 地图坐标
+    /// </summary>
     public struct MapPos
     {
         public double x;
@@ -24,18 +27,22 @@ namespace RpgMap
             this.dir = dir;
         }
     }
+
+    /// <summary>
+    /// 技能对象
+    /// </summary>
     internal class MapSkill
     {
         public static long SkillEnID = 1;
-        public long ID { get; set; }    // 实例ID
-        public int ActorType { get; set; }
-        public long ActorID { get; set; } // 技能释放者
+        public long ID { get; }    // 实例ID
+        public int ActorType { get; }
+        public long ActorID { get; } // 技能释放者
         public List<(int,long)> TargetMap { get; set; } // 技能目标ID(非指向性技能通常为空)
-        public int SkillId { get; set; } // 技能配置ID
+        public int SkillId { get; } // 技能配置ID
         public MapPos Pos { get; set; } = new(0, 0, 0); // 目标位置
         public int CurWave { get; set; } // 当前技能段数
         public long SkillTime { get; set; } // 上一段技能触发时间
-        public SkillConfig SkillConfig { get; set; } = new(); // 技能配置
+        public SkillConfig SkillConfig { get; } = new(); // 技能配置
         public MapSkill(int actorType, long actorID, List<(int,long)> TargetMap, int skillId, MapPos pos)
         {
             ID = GetEnID();
@@ -51,13 +58,17 @@ namespace RpgMap
 
         public static long GetEnID()
         {
+            if (SkillEnID >= long.MaxValue)
+                SkillEnID = 1;
             return SkillEnID++;
         }
 
         
     }
 
-    // 地图内的技能信息
+    /// <summary>
+    /// 地图内实例对象的技能信息
+    /// </summary>
     internal class ActorSkill
     {
         public int SkillID { get; set; } // 技能配置ID

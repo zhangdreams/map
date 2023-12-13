@@ -256,12 +256,12 @@ namespace RpgMap
                     case 2:
                         MapMonster monster = Map.GetMapMonster(ID);
                         ret = monster.Moving(nowMillSec, upTime);
-                        if (MapMgr.ShowData == "m")
-                            Log.W($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.GetPath().Count}");
+                        //if (MapMgr.ShowData == "m")
+                        //    Log.W($" monster {ID} moving ret {ret}, upTime: {upTime}, path:{monster.GetPath().Count}");
                         if (IsArrival())
                         {
-                            if (MapMgr.ShowData == "m")
-                                Log.W($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
+                            //if (MapMgr.ShowData == "m")
+                            //    Log.W($"monster {ID} arrival {monster.PosX}, {monster.PosY}");
                             if (monster.GetPath().Count <= 0)
                                 DoStopMove();
                             else

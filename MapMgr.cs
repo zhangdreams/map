@@ -17,7 +17,7 @@ namespace RpgMap
         //private static int MapID = 0;
         public static readonly double SphereRis = 0.5;  // 碰撞球半径(0表示无视碰撞)
         public static Random random = new();
-        public static string ShowData { get; set; } = "";
+        public static string ShowData { get; set; } = "";   // 调试用，无意义
 
         public MapMgr() {}
 
@@ -129,13 +129,31 @@ namespace RpgMap
         public static void DelMap(Map map)
         {
             mapDic.Remove(map.MapName);
-            mapList.TryGetValue(map.MapID, out List<Map> list);
-            list ??= new();
-            list.Remove(map);
-            if (list.Count > 0)
-                mapList[map.MapID] = list;
-            else
-                mapList.Remove(map.MapID);
+            if(mapList.TryGetValue(map.MapID, out List<Map> list))
+            {
+                list.Remove(map);
+                if (list.Count > 0)
+                    mapList[map.MapID] = list;
+                else
+                    mapList.Remove(map.MapID);
+            }
+            Log.E($"{map.MapName} map has removed");
+        }
+
+        /// <summary>
+        /// 关闭地图
+        /// </summary>
+        /// <param name="map">需要关闭的地图对象</param>
+        public static void CloseMap(Map map)
+        {
+            if(map.GetRoleNum() <= 0)   // 地图内没人，直接删除
+                DelMap(map);
+            map.KickAllRole();  // 踢出地图内玩家后删除地图
+        }
+        public static void CloseAllMap()
+        {
+            foreach(Map map in mapDic.Values)
+                CloseMap(map);
         }
 
         //private static int GetMapID()

@@ -43,6 +43,7 @@ namespace RpgMap
         private int LoopTick5000 { get; set; } = 1;
 
         private Dictionary<long, (double, double)> lastPos = new(); 
+        private List<string> MessageQueue = new();
 
         public Map(int mapID, string mapName, int line) 
         {
@@ -85,6 +86,7 @@ namespace RpgMap
             {
                 long nowMillSec = Time.NowMillSec();
                 // 100ms 一次轮询
+                LoopQueue();
                 LoopMoving(nowMillSec);
                 LoopSkills(nowMillSec);
                 LoopBuff(nowMillSec);
@@ -212,7 +214,8 @@ namespace RpgMap
         /// <returns></returns>
         public int GetRoleNum()
         {
-            return RoleNum;
+            // return RoleNum;
+            return MonsterNum;  // todo 暂时先返回怪物数量代替玩家数量
         }
 
         /// <summary>
@@ -246,13 +249,13 @@ namespace RpgMap
             var actor = MapCommon.GetActor(this, (1, roleID));
             if (actor == null)
                 return;
+            MapPos pos = actor.GetPos();
+            Aoi.ExitArea(1, roleID, pos.x, pos.y);
             Roles.Remove(roleID);
             ActorMap.Remove((1, roleID));
             RoleNum --;
-            MapPos pos = actor.GetPos();
-            Aoi.ExitArea(1, roleID, pos.x, pos.y);
             //ActorPosMap.Remove((1, roleID));
-            if (RoleNum == 0 && Line > 0)  
+            if (RoleNum <= 0 && Line > 0)  
             {
                 Timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Timer.Dispose();
@@ -269,7 +272,6 @@ namespace RpgMap
         {
             Monsters[monster.ID] = monster;
             MonsterNum ++;
-            RoleNum ++; // todo 这里暂时把怪物当做玩家计数
             ActorMap[(2, mapActor.ID)] = mapActor;
             Aoi.EnterArea(2, monster.ID, monster.PosX, monster.PosY);
             //ActorPosMap[(1, MapActor.ID)] = ((int)monster.PosX, (int)monster.PosY);
@@ -284,13 +286,27 @@ namespace RpgMap
             var actor = MapCommon.GetActor(this, (2, monsterID));
             if (actor == null)
                 return;
+            MapPos pos = actor.GetPos();
+            Aoi.ExitArea(2, monsterID, pos.x, pos.y);
             Monsters.Remove(monsterID);
             ActorMap.Remove((2, monsterID));
             MonsterNum --;
-            MapPos pos = actor.GetPos();
-            Aoi.ExitArea(2, monsterID, pos.x, pos.y);
             //ActorPosMap.Remove((2, MonsterID));
-            DoRoleExit(monsterID);  // todo 这里暂时把怪物当做玩家计数
+            /// 这里暂时统计怪物数量计算
+            if (MonsterNum <= 0)
+            {
+                Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                Timer.Dispose();
+                MapMgr.DelMap(this);
+            }
+        }
+
+        /// <summary>
+        /// 踢出所有玩家 
+        /// </summary>
+        public void KickAllRole()
+        {
+            MessageQueue.Add("KickAllRole");
         }
 
         /// <summary>
@@ -333,11 +349,38 @@ namespace RpgMap
             return NewHp;
         }
 
-        // 返回地图内有Actor的坐标列表
-        //public List<(int, int)> GetActorPosMap()
-        //{
-        //    return ActorPosMap.Values.ToList();
-        //}
+        /// <summary>
+        /// 处理消息队列
+        /// </summary>
+        private void LoopQueue()
+        {
+            try
+            {
+                LoopQueue2();
+            }catch (Exception e)
+            {
+                Log.E($"loop queue: {e.ToString()}");
+            }
+        }
+        private void LoopQueue2()
+        {
+            while (MessageQueue.Count > 0)
+            {
+                string msg = MessageQueue[0];
+                MessageQueue.RemoveAt(0);
+                switch (msg)
+                {
+                    case "KickAllRole":
+                        foreach(var id in Roles.Keys)
+                            DoRoleExit(id);
+                        foreach(var id in Monsters.Keys)   // 这里是把monster当做玩家处理
+                            DoMonsterExit(id);
+                        continue;
+                    default:
+                        continue;
+                }
+            }
+        }
 
         /// <summary>
         /// 轮询检查移动 更新位置
@@ -350,7 +393,7 @@ namespace RpgMap
                 LoopMoving2(nowMillSec);
             }catch (Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"loop moving: {e.ToString()}");
             }
         }
         public void LoopMoving2(long nowMillSec)
@@ -677,23 +720,23 @@ namespace RpgMap
         /// </summary>
         public void ShowDict()
         {
-            string ShowModel = MapMgr.ShowData;
-            switch (ShowModel)
-            {
-                case "1":
-                    ShowBoss(1001);
-                    return;
-                case "2":
-                    ShowBoss(1002);
-                    return;
-                case "n":
-                    break;
-                case "r":
-                    Log.P($"loop show dict");
-                    return;
-                default:
-                    return;
-            }
+            //string ShowModel = MapMgr.ShowData;
+            //switch (ShowModel)
+            //{
+            //    case "1":
+            //        ShowBoss(1001);
+            //        return;
+            //    case "2":
+            //        ShowBoss(1002);
+            //        return;
+            //    case "n":
+            //        break;
+            //    case "r":
+            //        Log.P($"loop show dict");
+            //        return;
+            //    default:
+            //        return;
+            //}
             // Log.P($"monster number : {MonsterNum}");
             int n = 1;
             foreach(var monster in Monsters.Values)

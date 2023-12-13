@@ -37,6 +37,8 @@ namespace RpgMap
             {
                 MapMgr.ShowData = Console.ReadLine() ?? "n";
             }
+            MapMgr.CloseAllMap();
+            Thread.Sleep(5000);
         }
 
         /// <summary>

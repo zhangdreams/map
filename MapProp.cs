@@ -6,14 +6,32 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
-    public struct Prop
+    /// <summary>
+    /// 战斗属性
+    /// </summary>
+    public class Prop
     {
-        public long HP {  get; set; }
-        public long MaxHp { get; set; }
-        public int Attack { get; set; }
-        public int Defense {  get; set; }
-        public int Speed { get; set; }
-        public Prop() {}
+        public int Index { get; set; } = 0; //配置ID用
+        public long HP { get; set; } = 0;
+        public long MaxHp { get; set; } = 0;
+        public int Attack { get; set; } = 0;
+        public int Defense {  get; set; } = 0;
+        public int Speed { get; set; } = 0; // m/s
+        public Prop() 
+        {
 
+        }
+
+        /// <summary>
+        /// 属性输出展示
+        /// </summary>
+        public void Show()
+        {
+            Log.R($"prop.HP : {HP}");
+            Log.R($"prop.MaxHp : {MaxHp}");
+            Log.R($"prop.Attack : {Attack}");
+            Log.R($"prop.Defense : {Defense}");
+            Log.R($"prop.Speed : {Speed}");
+        }
     }
 }

@@ -1,0 +1,32 @@
+[
+  {
+	"SkillID" :1,
+	"Name" : "skill1",
+	"AttackParam" : 1.5,
+	"AttackDistance" : 8,
+	"CD" : 2000,
+	"Type" : 1,
+	"TotalWave" : 1,
+	"WaveInterval" : "0",
+	"DamageType" : 1,
+	"RangeParams" : "3",
+	"TargetNum" : 5,
+	"SelfBuffs" : "1,3000",
+	"TargetBuffs" : ""
+  },
+  {
+	"SkillID" :2,
+	"Name" : "skill2",
+	"AttackParam" : 2,
+	"AttackDistance" : 8,
+	"CD" : 3000,
+	"Type" : 0,
+	"TotalWave" : 2,
+	"WaveInterval" : "300",
+	"DamageType" : 2,
+	"RangeParams" : "3",
+	"TargetNum" : 5,
+	"SelfBuffs" : "2,1000",
+	"TargetBuffs" : ""
+  }
+]

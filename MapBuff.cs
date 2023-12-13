@@ -6,16 +6,28 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
-    public struct MapBuff
+    /// <summary>
+    /// 地图内实例身上的buff对象
+    /// </summary>
+    public class MapBuff
     {
-        public int BuffID {  get; set; }
+        public int BuffID {  get; }
         public long EndTime {  get; set; }
-        public long Value { get; set; }
-        public MapBuff(int BuffID, long EndTime, long Value) 
+        public int Value { get; set; }
+        public MapBuff(int BuffID, long EndTime, int Value) 
         {
             this.BuffID = BuffID;
             this.EndTime = EndTime;
             this.Value = Value;
         }
+    }
+
+    /// <summary>
+    /// buff类型枚举
+    /// </summary>
+    public enum BuffType
+    {
+        god = 2,    // 无敌
+        shield = 3 // 护盾
     }
 }

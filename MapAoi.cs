@@ -6,72 +6,98 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    /// <summary>
+    /// aoi
+    /// </summary>
     internal class MapAoi
     {
         private static readonly int GrideLength = 16;
         private static readonly int GrideWidth = 16;
-        public int Length { get; set; } // 地图长
-        public int Width { get; set; } // 地图宽
+        private int Length { get;} // 地图长
+        private int Width { get; } // 地图宽
 
-        public Dictionary<(int,int), List<(int, long)>> Grides = new(); // 用来保存每一个格子的对象
-        public Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
+        private Dictionary<(int,int), List<(int, long)>> Grides = new(); // 用来保存每一个格子的对象
+        private Dictionary<(int, int), List<(int, int)>> Nerbors = new(); // 保存某个格子的九宫格格子索引
 
-        public MapAoi(int Length, int Width) 
+        public MapAoi(int length, int width) 
         {
-            this.Length = Length;
-            this.Width = Width;
-            int GrideLen = (int)Length / GrideLength;
-            int GrideWid = (int)Width / GrideWidth;
-            for (int i = 0; i < GrideLen; i++)
+            this.Length = length;
+            this.Width = width;
+            int GrideLen = (int)length / GrideLength;
+            int GrideWid = (int)width / GrideWidth;
+            for (int i = 0; i <= GrideLen; i++)
             {
-                for (int j = 0; j < GrideWid; j++)
+                for (int j = 0; j <= GrideWid; j++)
                 {
                     List<(int, long)> values = new();
+                    // Log.R($"aoi gride key {(i,j)}");
                     Grides[(i, j)] = values;
                 }
             }
         }
 
-        // 返回某一个格子内的对象
-        private List<(int, long)> GetGride(double X, double Y)
+        /// <summary>
+        /// 返回某一个格子内的对象
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public List<(int, long)> GetGride(double x, double y)
         {
-            int GrideX = (int)X / GrideLength;
-            int GrideY = (int)Y / GrideWidth;
-            return GetGride(GrideX, GrideY);
+            int grideX = (int)x / GrideLength;
+            int grideY = (int)y / GrideWidth;
+            return GetGride(grideX, grideY);
         }
-        private List<(int, long)> GetGride(int GrideX, int GrideY)
+        /// <summary>
+        /// 返回某一个格子内的对象
+        /// </summary>
+        /// <param name="grideX">格子X坐标</param>
+        /// <param name="grideY">格子Y坐标</param>
+        /// <returns></returns>
+        private List<(int, long)> GetGride(int grideX, int grideY)
         {
-            var key = (GrideX, GrideY);
+            var key = (grideX, grideY);
             return GetGride(key);
         }
+        /// <summary>
+        /// 返回某一个格子内的对象
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         private List<(int, long)> GetGride((int,int) key)
         {
-            if (!Grides.ContainsKey(key))
-            {
-                List<(int, long)> values = new();
-                return values;
-            }
-            return Grides[key];
+            if (Grides.TryGetValue(key, out var value))
+                return value;
+            return new List<(int, long)>();
         }
 
-        // 返回某一个坐标点(格子)的九宫格索引
-        private List<(int, int)> GetNeighbors(double X, double Y)
+        /// <summary>
+        /// 返回某一个坐标点(格子)的九宫格索引
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        private List<(int, int)> GetNeighbors(double x, double y)
         {
-            int GrideX = (int)X / GrideLength;
-            int GrideY = (int)Y / GrideWidth;
-            return GetNeighbors(GrideX, GrideY);
+            int grideX = (int)x / GrideLength;
+            int grideY = (int)y / GrideWidth;
+            return GetNeighbors(grideX, grideY);
         }
-        private List<(int, int)> GetNeighbors(int GrideX, int GrideY)
+        /// <summary>
+        /// 返回某一个坐标点(格子)的九宫格索引
+        /// </summary>
+        /// <param name="grideX">格子X坐标</param>
+        /// <param name="grideY">格子Y坐标</param>
+        /// <returns></returns>
+        private List<(int, int)> GetNeighbors(int grideX, int grideY)
         {
-            var key = (GrideX, GrideY);
-            if (Nerbors.ContainsKey(key))
-            {
-                return Nerbors[key];
-            }
+            var key = (grideX, grideY);
+            if(Nerbors.TryGetValue(key, out var neighbors))
+                return neighbors;
             List<(int, int)> values = new();
-            for (int i = GrideX-1; i <= GrideX+1; i++)
+            for (int i = grideX - 1; i <= grideX + 1; i++)
             {
-                for (int j = GrideY-1; j <= GrideY+1; j++)
+                for (int j = grideY-1; j <= grideY+1; j++)
                 {
                     var k = (i, j);
                     if(Grides.ContainsKey(k))
@@ -82,60 +108,124 @@ namespace RpgMap
             return values;
         }
 
-        // 返回一个坐标点(格子)的九宫格对象
-        public List<(int, long)> GetAoi(double X, double Y)
+        /// <summary>
+        /// 返回一个坐标点(格子)的九宫格对象
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public List<(int, long)> GetAoi(double x, double y)
         {
-            int GrideX = (int)X / GrideLength;
-            int GrideY = (int)Y / GrideWidth;
-            return GetAoi(GrideX, GrideY);
+            int grideX = (int)x / GrideLength;
+            int grideY = (int)y / GrideWidth;
+            return GetAoi(grideX, grideY);
         }
-        public List<(int, long)> GetAoi(int GrideX, int GrideY)
+        /// <summary>
+        /// 返回一个坐标点(格子)的九宫格对象
+        /// </summary>
+        /// <param name="grideX">格子X坐标</param>
+        /// <param name="grideY">格子Y坐标</param>
+        /// <returns></returns>
+        public List<(int, long)> GetAoi(int grideX, int grideY)
         {
-            List<(int, int)> Keys = GetNeighbors(GrideX, GrideY);
+            List<(int, int)> keys = GetNeighbors(grideX, grideY);
             List<(int, long)> values = new();
-            foreach ((int, int) k in Keys)
+            foreach ((int, int) k in keys)
             {
                 List<(int, long)> v = GetGride(k);
-                values.AddRange(v);
+                for(int i = 0; i < v.Count; i++ )
+                    values.Add(v[i]);
             }
             return values;
         }
 
-        // 进入某一个格子
-        private void EnterArea(int Type, long ID, int GrideX, int GrideY)
+        /// <summary>
+        /// 进入某一个格子
+        /// </summary>
+        /// <param name="type">actor类型</param>
+        /// <param name="id">actor id</param>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        public void EnterArea(int type, long id, double x, double y)
         {
-            var key = (GrideX, GrideY);
-            List<(int, long)> list = Grides[key];
-            var v = (Type, ID);
+            int GrideX = (int)x / GrideLength;
+            int GrideY = (int)y / GrideWidth;
+            EnterArea(type, id, GrideX, GrideY);
+        }
+        private void EnterArea(int type, long id, int grideX, int grideY)
+        {
+            //var key = (GrideX, GrideY);
+            List<(int, long)> list = GetGride(grideX, grideY);
+            var v = (type, id);
             if(!list.Contains(v))
                 list.Add(v);
         }
 
-        // 离开某个格子
-        private void ExitArea(int Type, long ID, int GrideX, int GrideY)
+        /// <summary>
+        /// 离开某个格子
+        /// </summary>
+        /// <param name="type">actor类型</param>
+        /// <param name="id">actor id</param>
+        /// <param name="x">x坐标</param>
+        /// <param name="y">y坐标</param>
+        public void ExitArea(int type, long id, double x, double y)
         {
-            var key = (GrideX, GrideY);
-            List<(int, long)> list = Grides[key];
-            var v = (Type, ID);
+            int GrideX = (int)x / GrideLength;
+            int GrideY = (int)y / GrideWidth;
+            ExitArea(type, id, GrideX, GrideY);
+        }
+        private void ExitArea(int type, long id, int grideX, int grideY)
+        {
+            List<(int, long)> list = GetGride(grideX, grideY);
+            var v = (type, id);
             list.Remove(v);
         }
 
-        // 移动检测是否改变了格子
-        // X,Y 移动前坐标 
-        // X2,Y2移动后坐标
-        public void DoMove(int Type, long ID, double X, double Y, double X2, double Y2)
+        /// <summary>
+        /// 移动检测是否改变了格子
+        /// </summary>
+        /// <param name="type">actor类型</param>
+        /// <param name="id">actor id</param>
+        /// <param name="x">移动前x坐标</param>
+        /// <param name="y">移动前y坐标</param>
+        /// <param name="x2">移动后x坐标</param>
+        /// <param name="y2">移动后y坐标</param>
+        public void DoMove(int type, long id, double x, double y, double x2, double y2)
         {
-            int GrideX = (int)X / GrideLength;
-            int GrideY = (int)Y / GrideWidth;
-            int GrideX2 = (int)X2 / GrideLength;
-            int GrideY2 = (int)Y2 / GrideWidth;
-            if (GrideX != GrideX2 && GrideY != GrideY2)
+            int grideX = (int)x / GrideLength;
+            int grideY = (int)y / GrideWidth;
+            int grideX2 = (int)x2 / GrideLength;
+            int grideY2 = (int)y2 / GrideWidth;
+            if (grideX != grideX2 && grideY != grideY2)
             {
                 // 改变了格子
-                ExitArea(Type, ID, GrideX, GrideY);
-                EnterArea(Type, ID, GrideX2, GrideY2 );
+                ExitArea(type, id, grideX, grideY);
+                EnterArea(type, id, grideX2, grideY2 );
                 // todo 视野广播
             }
+        }
+
+        /// <summary>
+        /// 返回地图内某一个坐标所在的九宫格内实例的坐标
+        /// </summary>
+        /// <param name="map">地图对象</param>
+        /// <param name="x">X坐标</param>
+        /// <param name="y">Y坐标</param>
+        /// <returns></returns>
+        public Dictionary<(int, int), MapActor> GetGridePosList(Map map, double x, double y)
+        {
+            List<(int, long)> keys = GetAoi(x, y);
+            Dictionary<(int, int), MapActor> posDict = new();
+            foreach (var key in keys)
+            {
+                var actor = MapCommon.GetActor(map, key);
+                if (actor == null)
+                    continue;
+                MapPos pos = actor.GetPos();
+                (int, int) p = ((int)pos.x, (int)pos.y);
+                posDict[p] = actor;
+            }
+            return posDict;
         }
     }
 }

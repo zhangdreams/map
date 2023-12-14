@@ -180,7 +180,7 @@ namespace RpgMap
         public void SetPath(List<Node> path)
         {
             this.Path = path;
-            Log.W($"{ID} set path {this.Path.Count} pos:{(PosX, PosY)}");
+            //Log.W($"{ID} set path {this.Path.Count} pos:{(PosX, PosY)}");
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace RpgMap
             this.TargetX = 0;
             this.TargetY = 0;
             this.Path.Clear();
-            Log.W($"{ID} StopMove {this.Path.Count} pos:{(PosX,PosY)}");
+            //Log.W($"{ID} StopMove {this.Path.Count} pos:{(PosX,PosY)}");
             if ( this.doing.Count > 0 && this.doing[0] is MoveTo)
                 this.doing.RemoveAt(0);
         }
@@ -316,7 +316,7 @@ namespace RpgMap
             State = 1;
             HP = MaxHp;
             DeadTime = 0;
-            Log.E($"monster reborn {ID}");
+            Log.W($"monster reborn {ID}");
             // 出生点复活
             map.Aoi.DoMove(2, ID, PosX, PosY, BornX, BornY);
             PosX = BornX;
@@ -332,10 +332,10 @@ namespace RpgMap
             DeadTime = Time.NowMillSec();
             IsMoving = false;
             Path.Clear();
-            Log.W($"{ID} OnDead {this.Path.Count} pos:{(PosX, PosY)}");
+            //Log.W($"{ID} OnDead {this.Path.Count} pos:{(PosX, PosY)}");
             if (doing.Count > 0)
                 doing.RemoveAt(0);
-            Log.E($"monster dead {ID}");
+            Log.W($"monster dead {ID}");
             // todo
         }
 
@@ -401,7 +401,7 @@ namespace RpgMap
                     }
                     path2.AddRange(Path);
                     Path = path2;
-                    Log.W($"{ID} moving {Path.Count}");
+                    //Log.W($"{ID} moving {Path.Count}");
                     try
                     {
                         TargetX = Path[0].X;

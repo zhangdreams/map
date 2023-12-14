@@ -9,6 +9,7 @@ namespace RpgMap
     {
         public static void Main()
         {
+            _ = new Log();
             Stopwatch stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
             MapReader.Read();
@@ -39,6 +40,7 @@ namespace RpgMap
             }
             MapMgr.CloseAllMap();
             Thread.Sleep(5000);
+            Log.SetWrite(false);
         }
 
         /// <summary>

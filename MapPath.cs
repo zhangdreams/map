@@ -128,23 +128,15 @@ namespace RpgMap
         /// <returns></returns>
         private static List<Node>? CheckIndirect(Map map, Node start, Node goal)
         {
-            Node mid = new(start.X, goal.Y);
-            if(!ContainsObstacleBetween(map, start, mid)) 
-            { 
-                return new List<Node>() 
-                { 
-                    mid,
-                    goal
-                };
-            }
-            mid = new(goal.X, start.Y);
-            if (!ContainsObstacleBetween(map, start, mid))
+            List<Node> nodes = new()
             {
-                return new List<Node>()
-                {
-                    mid,
-                    goal
-                };
+                new(start.X, goal.Y),
+                new(goal.X, start.Y)
+            };
+            foreach (Node mid in nodes)
+            {
+                if (!ContainsObstacleBetween(map, start, mid))
+                    return new List<Node>() { mid, goal };
             }
             return null;
         }

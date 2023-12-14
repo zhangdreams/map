@@ -115,7 +115,7 @@ namespace RpgMap
             }
             catch(Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"MapLoop : {e.ToString()}");
             }
         }
 
@@ -434,7 +434,7 @@ namespace RpgMap
                 LoopSkills2(nowMillSec);
             }catch (Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"LoopSkills : {e}");
             }
         }
         public void LoopSkills2(long nowMillSec)
@@ -503,7 +503,7 @@ namespace RpgMap
             }
             catch (Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"LoopMonsterAI : {e}");
             }
         }
         public void LoopMonsterAI2(long nowMillSec)
@@ -690,7 +690,7 @@ namespace RpgMap
                 }
             }catch (Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"LoopBuff : {e}");
             }
         }
 
@@ -711,7 +711,7 @@ namespace RpgMap
             }
             catch (Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"LoopMonsterDead : {e}");
             }
         }
 
@@ -743,7 +743,7 @@ namespace RpgMap
             {
                 if(!monster.IsAlive())
                 {
-                    Log.E($"monster ({n}) has dead");
+                    Log.W($"monster ({n}) has dead");
                     continue;
                 }
                 Log.P($"{MapName} monster ({n++}) :");
@@ -752,16 +752,16 @@ namespace RpgMap
                 if (monster.doing.Count > 0 && monster.doing[0] != null)
                 {
                     ShowDoing(monster.doing[0]);
-                    lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
-                    (double X, double Y) = p;
-                    bool print = monster.doing[0] is MoveTo;
-                    if (X == monster.PosX && Y == monster.PosY && print)
-                    {
-                        Log.R($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
-                        foreach (var doing in monster.doing)
-                            Log.R($"monster doing {doing}");
-                    }
-                    lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
+                    //lastPos.TryGetValue(monster.MonsterID, out (double, double) p);
+                    //(double X, double Y) = p;
+                    //bool print = monster.doing[0] is MoveTo;
+                    //if (X == monster.PosX && Y == monster.PosY && print)
+                    //{
+                    //    Log.R($"monster move state {monster.GetMoveState()}, target pos: ({monster.TargetX}, {monster.TargetY})");
+                    //    foreach (var doing in monster.doing)
+                    //        Log.R($"monster doing {doing}");
+                    //}
+                    //lastPos[monster.MonsterID] = (monster.PosX, monster.PosY);
                 }
             }
             Log.P();

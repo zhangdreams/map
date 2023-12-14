@@ -273,7 +273,7 @@ namespace RpgMap
                 }
             }catch(Exception e)
             {
-                Log.E(e.ToString());
+                Log.E($"Map Actor DoMoving : {e}");
                 return (0, 0);
             }
         }
@@ -322,7 +322,7 @@ namespace RpgMap
             }
             catch (Exception ex)
             {
-                Log.E(ex.ToString());
+                Log.E($"DoStartMove : {ex}");
                 return false;
             }
         }

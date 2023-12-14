@@ -131,9 +131,11 @@ namespace RpgMap
             mapDic.Remove(map.MapName);
             if(mapList.TryGetValue(map.MapID, out List<Map> list))
             {
-                list.Remove(map);
                 if (list.Count > 0)
+                {
+                    list.Remove(map);
                     mapList[map.MapID] = list;
+                }
                 else
                     mapList.Remove(map.MapID);
             }

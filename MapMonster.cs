@@ -265,8 +265,11 @@ namespace RpgMap
             this.TargetY = 0;
             this.Path.Clear();
             //Log.W($"{ID} StopMove {this.Path.Count} pos:{(PosX,PosY)}");
-            if ( this.doing.Count > 0 && this.doing[0] is MoveTo)
-                this.doing.RemoveAt(0);
+            if ( this.doing.Count > 0)
+            {
+                if(this.doing[0] is MoveTo)
+                    this.doing.RemoveAt(0);
+            }
         }
 
         /// <summary>

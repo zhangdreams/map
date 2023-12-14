@@ -23,10 +23,15 @@ namespace RpgMap
         {
             if (WriteLog)
                 LogThread.Start();
+
+            string logFile = "../../../log/";
+            if(!Directory.Exists(logFile))
+                Directory.CreateDirectory(logFile);
+
             List<string> files = new()
             {
-                $"../../../log/error_{DateTime.Now:yyyy-MM-dd}.txt",
-                $"../../../log/log_{DateTime.Now:yyyy-MM-dd}.txt",
+                logFile + $"error_{DateTime.Now:yyyy-MM-dd}.txt",
+                logFile + $"log_{DateTime.Now:yyyy-MM-dd}.txt",
             };
             foreach (string file in files)
             {

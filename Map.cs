@@ -40,7 +40,7 @@ namespace RpgMap
         private List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
         private long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
         private int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
-        private Timer Timer;
+        //private Timer Timer;
         private int LoopTick200 {  get; set; } = 1;  // 200ms轮询标记
         private int LoopTick5000 { get; set; } = 1;
 

@@ -276,13 +276,8 @@ namespace RpgMap
             ActorMap.TryRemove((1, roleID), out _);
             RoleNum --;
             //ActorPosMap.Remove((1, roleID));
-            if (RoleNum <= 0 && Line > 0)  
-            {
-                //Timer.Change(Timeout.Infinite, Timeout.Infinite);
-                //Timer.Dispose();
-                StopMapTimer();
-                MapMgr.DelMap(this);
-            }
+            if (RoleNum <= 0 && Line > 0)
+                CloseMap();
         }
 
         /// <summary>
@@ -316,14 +311,17 @@ namespace RpgMap
             //ActorPosMap.Remove((2, MonsterID));
             /// 这里暂时统计怪物数量计算
             if (MonsterNum <= 0)
-            {
-                //Timer.Change(Timeout.Infinite, Timeout.Infinite);
-                //Timer.Dispose();
-                StopMapTimer();
-                MapMgr.DelMap(this);
-            }
+                CloseMap();
         }
 
+        /// <summary>
+        /// 关闭地图
+        /// </summary>
+        public void CloseMap()
+        {
+            StopMapTimer();
+            MapMgr.DelMap(this);
+        }
        
         /// <summary>
         /// 加血处理

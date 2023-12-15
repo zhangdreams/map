@@ -1,5 +1,6 @@
 ﻿using RpgMap;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace RpgMap
     internal class MapMgr
     {
         public static Dictionary<string, Map> mapDic = new();
-        public static Dictionary<int, List<Map>> mapList = new();
+        public static ConcurrentDictionary<int, List<Map>> mapList = new();
         //private static int MapID = 0;
         public static readonly double SphereRis = 0.5;  // 碰撞球半径(0表示无视碰撞)
         public static Random random = new();
@@ -137,7 +138,7 @@ namespace RpgMap
                     mapList[map.MapID] = list;
                 }
                 else
-                    mapList.Remove(map.MapID);
+                    mapList.TryRemove(map.MapID, out _);
             }
             Log.E($"{map.MapName} map has removed");
         }
@@ -150,7 +151,7 @@ namespace RpgMap
         {
             if(map.GetRoleNum() <= 0)   // 地图内没人，直接删除
                 DelMap(map);
-            map.KickAllRole();  // 踢出地图内玩家后删除地图
+            map.AddEvent("KickAllRole");  // 踢出地图内玩家后删除地图
         }
         public static void CloseAllMap()
         {

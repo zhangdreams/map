@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RpgMap
@@ -29,12 +31,12 @@ namespace RpgMap
         public MapAoi Aoi { get; }  // 地图内Aoi对象
 
         private int RoleNum { get; set; } = 0; // 地图内玩家数量
-        private Dictionary<long, MapRole> Roles { get; set; } = new(); // 保存玩家实例
+        private ConcurrentDictionary<long, MapRole> Roles { get; set; } = new(); // 保存玩家实例
         private int MonsterNum { get; set; } = 0;    // 地图内怪物数量
-        private Dictionary<long, MapMonster> Monsters { get; set; } = new();
-        private Dictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
+        private ConcurrentDictionary<long, MapMonster> Monsters { get; set; } = new();
+        private ConcurrentDictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
         //private Dictionary<(int, long), (int, int)> ActorPosMap { get; set; } = new();
-        //public List<(int, long)> BuffRoleIDList { get; set; } = new(); // 保存地图内有buff的实例对象
+        //public List<(int, long)> BuffRoleIDList { get; se t; } = new(); // 保存地图内有buff的实例对象
         private List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
         private long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
         private int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
@@ -43,7 +45,8 @@ namespace RpgMap
         private int LoopTick5000 { get; set; } = 1;
 
         private Dictionary<long, (double, double)> lastPos = new(); 
-        private List<string> MessageQueue = new();
+        private List<object> MessageQueue = new();
+        private bool RunTimer = true;
 
         public Map(int mapID, string mapName, int line) 
         {
@@ -72,8 +75,26 @@ namespace RpgMap
         {
             LastTickTime = Time.NowMillSec();
             // 增加一个轮询
-            Timer cTimer = new (MapLoop, null, 500, 100);
-            Timer = cTimer;
+            //Timer cTimer = new (MapLoop, null, 500, 100);
+            //Timer = cTimer;
+            Task.Run(() =>
+            {
+                while (RunTimer)
+                {
+                    MapLoop(null);
+                    long nowMill = Time.NowMillSec();
+                    int sleepTime = Math.Max((int)(LastTickTime + 100 - nowMill), 0);
+                    Thread.Sleep(sleepTime);
+                }
+            });
+        }
+
+        /// <summary>
+        /// 结束timer轮询
+        /// </summary>
+        public void StopMapTimer()
+        {
+            RunTimer = false;
         }
 
         /// <summary>
@@ -146,7 +167,7 @@ namespace RpgMap
         /// 返回地图内actor
         /// </summary>
         /// <returns></returns>
-        public Dictionary<(int, long), MapActor> GetMapActors()
+        public ConcurrentDictionary<(int, long), MapActor> GetMapActors()
         {
             return ActorMap;
         }
@@ -155,7 +176,7 @@ namespace RpgMap
         /// 返回地图内的monster对象
         /// </summary>
         /// <returns></returns>
-        public Dictionary<long, MapMonster> GetMapMonsters()
+        public ConcurrentDictionary<long, MapMonster> GetMapMonsters()
         {
             return Monsters;
         }
@@ -174,7 +195,7 @@ namespace RpgMap
         /// 返回地图内MapRole对象
         /// </summary>
         /// <returns></returns>
-        public Dictionary<long, MapRole> GetMapRoles()
+        public ConcurrentDictionary<long, MapRole> GetMapRoles()
         {
             return Roles;
         }
@@ -251,14 +272,15 @@ namespace RpgMap
                 return;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(1, roleID, pos.x, pos.y);
-            Roles.Remove(roleID);
-            ActorMap.Remove((1, roleID));
+            Roles.TryRemove(roleID, out _);
+            ActorMap.TryRemove((1, roleID), out _);
             RoleNum --;
             //ActorPosMap.Remove((1, roleID));
             if (RoleNum <= 0 && Line > 0)  
             {
-                Timer.Change(Timeout.Infinite, Timeout.Infinite);
-                Timer.Dispose();
+                //Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                //Timer.Dispose();
+                StopMapTimer();
                 MapMgr.DelMap(this);
             }
         }
@@ -288,27 +310,21 @@ namespace RpgMap
                 return;
             MapPos pos = actor.GetPos();
             Aoi.ExitArea(2, monsterID, pos.x, pos.y);
-            Monsters.Remove(monsterID);
-            ActorMap.Remove((2, monsterID));
+            Monsters.TryRemove(monsterID, out _);
+            ActorMap.TryRemove((2, monsterID), out _);
             MonsterNum --;
             //ActorPosMap.Remove((2, MonsterID));
             /// 这里暂时统计怪物数量计算
             if (MonsterNum <= 0)
             {
-                Timer.Change(Timeout.Infinite, Timeout.Infinite);
-                Timer.Dispose();
+                //Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                //Timer.Dispose();
+                StopMapTimer();
                 MapMgr.DelMap(this);
             }
         }
 
-        /// <summary>
-        /// 踢出所有玩家 
-        /// </summary>
-        public void KickAllRole()
-        {
-            MessageQueue.Add("KickAllRole");
-        }
-
+       
         /// <summary>
         /// 加血处理
         /// </summary>
@@ -350,6 +366,15 @@ namespace RpgMap
         }
 
         /// <summary>
+        /// 添加到地图的事件（为了避免多线程操作）
+        /// </summary>
+        /// <param name="addEvent"></param>
+        public void AddEvent(object addEvent)
+        {
+            MessageQueue.Add(addEvent);
+        }
+
+        /// <summary>
         /// 处理消息队列
         /// </summary>
         private void LoopQueue()
@@ -366,7 +391,7 @@ namespace RpgMap
         {
             while (MessageQueue.Count > 0)
             {
-                string msg = MessageQueue[0];
+                object msg = MessageQueue[0];
                 MessageQueue.RemoveAt(0);
                 switch (msg)
                 {
@@ -660,7 +685,7 @@ namespace RpgMap
                 }
             }
             foreach(long ID in removeKeys)
-                Monsters.Remove(ID);
+                Monsters.TryRemove(ID, out _);
         }
 
         /// <summary>

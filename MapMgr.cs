@@ -13,8 +13,8 @@ namespace RpgMap
     /// </summary>
     internal class MapMgr
     {
-        public static Dictionary<string, Map> mapDic = new();
-        public static ConcurrentDictionary<int, List<Map>> mapList = new();
+        public static Dictionary<string, Map> MapDic = new();
+        public static ConcurrentDictionary<int, List<Map>> MapList = new();
         //private static int MapID = 0;
         public static readonly double SphereRis = 0.5;  // 碰撞球半径(0表示无视碰撞)
         public static Random random = new();
@@ -32,7 +32,7 @@ namespace RpgMap
         {
             string mapName = MapTool.GetNormalName(mapID);
             int line = 0;
-            if (mapDic.ContainsKey(mapName))
+            if (MapDic.ContainsKey(mapName))
             {
                 line = GetMapLine(mapID);
                 mapName = MapTool.GetNormalName(mapID, line);
@@ -61,19 +61,19 @@ namespace RpgMap
         /// <returns></returns>
         public static Map? CreateMap(int mapID, string mapName, int line)
         {
-            if (mapDic.ContainsKey(mapName))
+            if (MapDic.ContainsKey(mapName))
             {
                 Log.E($"exist Map MapID:{mapID}, mapName:{mapName}");
                 return null;
             }
             //int ID = GetMapID();
             Map map = new(mapID, mapName, line);
-            mapDic[mapName] = map;
+            MapDic[mapName] = map;
 
-            mapList.TryGetValue(mapID, out List<Map>? list);
+            MapList.TryGetValue(mapID, out List<Map>? list);
             list ??= new();
             list.Add(map);
-            mapList[mapID] = list;
+            MapList[mapID] = list;
             return map;
         }
 
@@ -85,7 +85,7 @@ namespace RpgMap
         public static int GetMapLine(int mapID)
         {
             int line = 0;
-            if (mapList.TryGetValue(mapID, out List<Map>? list))
+            if (MapList.TryGetValue(mapID, out List<Map>? list))
             {
                 foreach (Map m in list)
                     line = Math.Max(line, m.Line);
@@ -100,7 +100,7 @@ namespace RpgMap
         /// <returns></returns>
         public static Map? GetMap(string mapName)
         {
-            if (mapDic.TryGetValue(mapName, out var map))
+            if (MapDic.TryGetValue(mapName, out var map))
                 return map;
             return null;
         }
@@ -113,7 +113,7 @@ namespace RpgMap
         public static Map GetMap(int mapID)
         {
             var config = MapReader.GetConfig(mapID);
-            mapList.TryGetValue(mapID, out List<Map> list);
+            MapList.TryGetValue(mapID, out List<Map> list);
             list ??= new();
             foreach (Map map in list)
             {
@@ -129,16 +129,16 @@ namespace RpgMap
         /// <param name="map">需要删除的地图对象</param>
         public static void DelMap(Map map)
         {
-            mapDic.Remove(map.MapName);
-            if(mapList.TryGetValue(map.MapID, out List<Map> list))
+            MapDic.Remove(map.MapName);
+            if(MapList.TryGetValue(map.MapID, out List<Map> list))
             {
                 if (list.Count > 0)
                 {
                     list.Remove(map);
-                    mapList[map.MapID] = list;
+                    MapList[map.MapID] = list;
                 }
                 else
-                    mapList.TryRemove(map.MapID, out _);
+                    MapList.TryRemove(map.MapID, out _);
             }
             Log.E($"{map.MapName} map has removed");
         }
@@ -155,7 +155,7 @@ namespace RpgMap
         }
         public static void CloseAllMap()
         {
-            foreach(Map map in mapDic.Values)
+            foreach(Map map in MapDic.Values)
                 CloseMap(map);
         }
 
@@ -186,7 +186,7 @@ namespace RpgMap
         /// </summary>
         public static void ShowMapDict()
         {
-            foreach (var map in mapDic.Values) 
+            foreach (var map in MapDic.Values) 
             { 
                 Log.R($"Map ID:{map.MapID},MapName:{map.MapName},CreateTime:{map.CreateTime}"); 
             }

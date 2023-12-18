@@ -16,7 +16,7 @@ namespace RpgMap
         private static readonly BlockingCollection<(string fileType, string msg)> LogQueue = new ();
         private static readonly Thread LogThread = new (WhiteFile);
         private static readonly SemaphoreSlim Semaphore = new(5);
-        private static bool RunWrite = true;
+        private static bool RunWriteWhile = true;
 
 
         public Log()
@@ -86,7 +86,7 @@ namespace RpgMap
 
         private static async void WhiteFile()
         {
-            while (RunWrite)
+            while (RunWriteWhile)
             {
                 if (LogQueue.TryTake(out var message))
                 {
@@ -118,7 +118,7 @@ namespace RpgMap
 
         public static void SetWrite(bool write)
         {
-            RunWrite = write;
+            RunWriteWhile = write;
         }
     }
 }

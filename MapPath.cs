@@ -135,7 +135,7 @@ namespace RpgMap
             };
             foreach (Node mid in nodes)
             {
-                if (!ContainsObstacleBetween(map, start, mid))
+                if (!ContainsObstacleBetween(map, start, mid) && !ContainsObstacleBetween(map, mid, goal))
                     return new List<Node>() { mid, goal };
             }
             return null;

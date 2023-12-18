@@ -7,16 +7,23 @@ using System.Threading.Tasks;
 
 namespace RpgMap
 {
+    public enum LogLevel
+    {
+        all = 0,    // 输出所有日志
+        warning = 1,    // 输出警告和报错日志
+        errorOnly = 2,  // 只输出报错
+    }
     /// <summary>
     /// 日志输出
     /// </summary>
     internal class Log
     {
-        private static readonly bool WriteLog = true;
+        private static readonly bool WriteLog = false;
         private static readonly BlockingCollection<(string fileType, string msg)> LogQueue = new ();
         private static readonly Thread LogThread = new (WhiteFile);
         private static readonly SemaphoreSlim Semaphore = new(5);
         private static bool RunWriteWhile = true;
+        private static int OutLogLevel = (int)LogLevel.errorOnly;
 
 
         public Log()
@@ -48,19 +55,25 @@ namespace RpgMap
         public static void P(string msg)
         {
             Console.ForegroundColor = ConsoleColor.White;
-            Show(msg);
+            msg = Show(msg);
+            if (OutLogLevel == (int)LogLevel.all)
+                ToFile("log", msg);
         }
 
         public static void R(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Show(msg);
+            msg = Show(msg);
+            if (OutLogLevel == (int)LogLevel.all)
+                ToFile("log", msg);
         }
 
         public static void W(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Show(msg);
+            msg = Show(msg);
+            if (OutLogLevel <= (int)LogLevel.warning)
+                ToFile("log", msg);
         }
 
         public static void E(string msg)
@@ -74,7 +87,7 @@ namespace RpgMap
         {
             msg = $"{DateTimeOffset.Now} " + msg;
             Console.WriteLine(msg);
-            ToFile("log", msg);
+            //ToFile("log", msg);
             return msg;
         }
 
@@ -105,7 +118,8 @@ namespace RpgMap
                     {
                         Semaphore.Release();
                     }
-                    
+
+                    Thread.Sleep(500);
                 }
             }
         }

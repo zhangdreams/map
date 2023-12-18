@@ -39,6 +39,11 @@ namespace RpgMap
             return other.X == X && other.Y == Y;
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
+
         /// <summary>
         /// 返回format后的节点坐标字符串
         /// </summary>
@@ -126,7 +131,7 @@ namespace RpgMap
         /// <param name="start">起点</param>
         /// <param name="goal">终点</param>
         /// <returns></returns>
-        private static List<Node>? CheckIndirect(Map map, Node start, Node goal)
+        public static List<Node>? CheckIndirect(Map map, Node start, Node goal)
         {
             List<Node> nodes = new()
             {
@@ -217,7 +222,7 @@ namespace RpgMap
         /// <param name="a">A点坐标</param>
         /// <param name="b">B点坐标</param>
         /// <returns></returns>
-        private static int CalculateDistance(Map map, Node a, Node b)
+        public static int CalculateDistance(Map map, Node a, Node b)
         {
             int dx = a.X - b.X;
             int dy = a.Y - b.Y;
@@ -236,7 +241,7 @@ namespace RpgMap
         /// <param name="start">起点</param>
         /// <param name="end">终点</param>
         /// <returns></returns>
-        private static bool ContainsObstacleBetween(Map map, Node start, Node end)
+        public static bool ContainsObstacleBetween(Map map, Node start, Node end)
         {
             // 检查两个节点之间的直线路径是否包含障碍物
             int dx = Math.Abs(end.X - start.X);

@@ -356,16 +356,16 @@ namespace RpgMap
                 throw new Exception($"pos is unvalid x={x},y={y}");
             }
             // todo 判断能否移动 一些状态的判断
-            MapPos Pos = GetPos();
-            Node Start = new((int)Pos.x, (int)Pos.y);
-            Node Goal = new((int)x, (int)y);
-            //var Path = MapPath.FindPath(Map, Start, Goal) ?? throw new Exception($"can not move to pos {(Map.MapName,ID)} x={x},y={y}, curpos {(Start.X, Start.Y)}");
-            var Path = MapPath.FindPath(map, Start, Goal);
-            if (Path == null)
+            MapPos pos = GetPos();
+            Node start = new((int)pos.x, (int)pos.y);
+            Node goal = new((int)x, (int)y);
+            var path = MapPath.FindPath(map, start, goal);
+            //var path = MapJPS.JumpPointSearch(map, start, goal);
+            if (path == null)
                 return false;
             SetMoveState(true);
             SetTargetPos(x, y);
-            SetPath(Path);
+            SetPath(path);
             return true;
         }
 
@@ -396,6 +396,7 @@ namespace RpgMap
                         goal = new((int)TargetX, (int)TargetY);
 
                     var path2 = MapPath.FindPath(map, start, goal);
+                    //var path2 = MapJPS.JumpPointSearch(map, start, goal);
                     Log.W($"monster {ID} pause reFindPath start:{start.Show()} goal:{goal.Show()}, target{((int)TargetX, (int)TargetY)}, NewPos {((int)newX, (int)newY)}, {Path.Count}");
                     if (path2 == null || path2.Count <= 0)
                     {
@@ -448,27 +449,25 @@ namespace RpgMap
                 {
                     TargetX = next.X;
                     TargetY = next.Y;
-                    //try
-                    //{
+                    try
+                    {
                         Path.RemoveAt(0);
-                    //}
-                    //catch (Exception e)
-                    //{
-                    //    Log.E(e.ToString());
-                    //    Log.E($"Move Next {Path.Count}");
-                    //}
+                    }
+                    catch (Exception e)
+                    {
+                        Log.E($"MoveNext : {e}, {Path.Count}");
+                    }
                 }
                 else
                 {
-                    //try
-                    //{ 
+                    try
+                    {
                         Path.RemoveAt(0);
-                    //}
-                    //catch (Exception e)
-                    //{
-                    //    Log.E(e.ToString());
-                    //    Log.E($"Move Next {Path.Count}");
-                    //}
+                    }
+                    catch (Exception e)
+                    {
+                        Log.E($"Move Next {Path.Count}, {e}");
+                    }
                     MoveNext();
                 }
             }else

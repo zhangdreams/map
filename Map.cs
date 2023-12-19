@@ -710,8 +710,10 @@ namespace RpgMap
                         case int SkillID:
                             if (SkillID > 0)
                             {
-                                var TActor = MapCommon.GetActor(this, monster.TarKey); // Fight中已过滤掉目标死亡或不存在的情况
-                                actor.DoUseSkill(SkillID, TActor.GetPos(), new List<(int, long)> { monster.TarKey });
+                                ActorMap.TryGetValue(monster.TarKey, out var tActor);// Fight中已过滤掉目标死亡或不存在的情况
+                                if (tActor == null)
+                                    continue;
+                                actor.DoUseSkill(SkillID, tActor.GetPos(), new List<(int, long)> { monster.TarKey });
                             }
                             continue;
                         default:

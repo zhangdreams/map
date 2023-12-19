@@ -419,7 +419,7 @@ namespace RpgMap
                 Buffs[buffID] = Buff2;
                 DoBuffEffect(Buff2);
             }
-           
+            Map.OnBuffChange((Type, ID), false);
         }
 
         /// <summary>
@@ -560,7 +560,10 @@ namespace RpgMap
                 DelBuffChangeProp(buffID, add);
             }
             Log.R($"del buff ActorID {ID}, buff {buffID}");
+            if (Buffs.Count <= 0)
+                Map.OnBuffChange((Type, ID), true);
             // todo 可能会有些效果要触发
+
         }
 
         /// <summary>

@@ -135,9 +135,10 @@ namespace RpgMap
         /// 设置怪物移动状态
         /// </summary>
         /// <param name="state">移动状态</param>
-        public void SetMoveState(bool State)
+        public void SetMoveState(bool state)
         {
-            this.IsMoving = State;
+            this.IsMoving = state;
+            map.OnChangeMoveState((2, ID), state);
         }
 
         /// <summary>
@@ -145,10 +146,10 @@ namespace RpgMap
         /// </summary>
         /// <param name="posX">x坐标</param>
         /// <param name="posY">y坐标</param>
-        public void SetTargetPos(double PosX, double PosY)
+        public void SetTargetPos(double posX, double posY)
         {
-            this.PosX = PosX;
-            this.PosY = PosY;
+            this.PosX = posX;
+            this.PosY = posY;
         }
 
         /// <summary>
@@ -165,9 +166,9 @@ namespace RpgMap
         /// </summary>
         public void StopMove()
         {
-            this.IsMoving = false;
             this.TargetX = 0;
             this.TargetY = 0;
+            SetMoveState(false);
         }
 
         /// <summary>
@@ -175,11 +176,11 @@ namespace RpgMap
         /// </summary>
         /// <param name="add">增加的血量</param>
         /// <returns>改变后的血量</returns>
-        public long AddHp(int Add)
+        public long AddHp(int add)
         {
             if (State > 0)
             {
-                HP = Math.Min(MaxHp, HP + Add);
+                HP = Math.Min(MaxHp, HP + add);
             }
             return HP;
         }

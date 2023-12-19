@@ -65,6 +65,7 @@ namespace RpgMap
         /// <returns>路径List or null</returns>
         public static List<Node>? FindPath(Map map, Node start, Node goal)
         {
+            //return MapJPS.JumpPointSearch(map, start, goal);
             if ((start.X == goal.X || start.Y == goal.Y) && !ContainsObstacleBetween(map, start, goal))    // 中间没有障碍物，直接可达
                 return new() { goal };
 

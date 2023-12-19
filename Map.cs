@@ -35,8 +35,9 @@ namespace RpgMap
         private int MonsterNum { get; set; } = 0;    // 地图内怪物数量
         private ConcurrentDictionary<long, MapMonster> Monsters { get; set; } = new();
         private ConcurrentDictionary<(int,long), MapActor> ActorMap { get; set; } = new();   // 保存地图Actor实例
+        private List<(int, long)> MovingActors { get; set; } = new();   // 正在移动的实例
         //private Dictionary<(int, long), (int, int)> ActorPosMap { get; set; } = new();
-        //public List<(int, long)> BuffRoleIDList { get; se t; } = new(); // 保存地图内有buff的实例对象
+        private List<(int, long)> BuffActors { get; set; } = new(); // 保存地图内有buff的实例对象
         private List<MapSkill> SkillList { get; set; } = new();   // 保存地图内的技能实例
         private long MaxMonsterID { get; set; } = 1;   // 地图内怪物的最大实例ID
         private int MaxCamp {  get; set; } = 0;  // 地图内的最大阵营索引
@@ -315,6 +316,38 @@ namespace RpgMap
         }
 
         /// <summary>
+        /// 实例改变了移动状态相应
+        /// </summary>
+        /// <param name="key">实例key</param>
+        /// <param name="moveState">移动状态</param>
+        public void OnChangeMoveState((int,long) key, bool moveState)
+        {
+            if(moveState)
+            {
+                if (!MovingActors.Contains(key))
+                    MovingActors.Add(key);
+            }
+            else
+                MovingActors.Remove(key);
+        }
+
+        /// <summary>
+        /// 实例增删buff，同步相应buffactor列表
+        /// </summary>
+        /// <param name="key">实例key</param>
+        /// <param name="isDel">是否删除</param>
+        public void OnBuffChange((int, long) key, bool isDel)
+        {
+            if (isDel)
+                BuffActors.Remove(key);
+            else
+            {
+                if (!BuffActors.Contains(key))
+                    BuffActors.Add(key);
+            }
+        }
+
+        /// <summary>
         /// 关闭地图
         /// </summary>
         public void CloseMap()
@@ -382,7 +415,7 @@ namespace RpgMap
                 LoopQueue2();
             }catch (Exception e)
             {
-                Log.E($"loop queue: {e.ToString()}");
+                Log.E($"loop queue: {e}");
             }
         }
         private void LoopQueue2()
@@ -416,19 +449,23 @@ namespace RpgMap
                 LoopMoving2(nowMillSec);
             }catch (Exception e)
             {
-                Log.E($"loop moving: {e.ToString()}");
+                Log.E($"loop moving: {e}");
             }
         }
         public void LoopMoving2(long nowMillSec)
         {
             int upTime = (int)(nowMillSec - LastTickTime);
-            foreach (MapActor Actor in ActorMap.Values)
+            for (int i = 0; i < MovingActors.Count; i++)
             {
-                if (Actor.IsAlive() && Actor.MoveState())
+                (int,long) key = MovingActors[i];
+                ActorMap.TryGetValue(key, out var actor);
+                if (actor == null)
+                    continue;
+                if (actor.IsAlive() && actor.MoveState())
                 {
-                    MapPos Pos = Actor.GetPos();
-                    (double NewX, double NewY) = Actor.DoMoving(nowMillSec, upTime);
-                    Aoi.DoMove(Actor.Type, Actor.ID, Pos.x, Pos.y, NewX, NewY);
+                    MapPos Pos = actor.GetPos();
+                    (double NewX, double NewY) = actor.DoMoving(nowMillSec, upTime);
+                    Aoi.DoMove(actor.Type, actor.ID, Pos.x, Pos.y, NewX, NewY);
                     //ActorPosMap[(Actor.Type, Actor.ID)] = ((int)NewX, (int)NewY);
                 }
             }
@@ -706,9 +743,13 @@ namespace RpgMap
         {
             try
             {
-                foreach(var actor in ActorMap.Values)
+                for(int i = 0; i < BuffActors.Count; i++)
                 {
-                    if(actor.GetBuffs().Count > 0)
+                    (int, long) key = BuffActors[i];
+                    ActorMap.TryGetValue(key, out var actor);
+                    if (actor == null)
+                        continue;
+                    if (actor.GetBuffs().Count > 0)
                         actor.LoopBuff(nowMillSec);
                 }
             }catch (Exception e)

@@ -160,6 +160,7 @@ namespace RpgMap
         public void SetMoveState(bool state)
         {
             this.IsMoving = state;
+            map.OnChangeMoveState((2,ID), state);
         }
         
         /// <summary>
@@ -259,12 +260,10 @@ namespace RpgMap
         /// </summary>
         public void StopMove()
         {
-            // Log.P($"{ID} StopMove");
-            this.IsMoving = false;
             this.TargetX = 0;
             this.TargetY = 0;
             this.Path.Clear();
-            //Log.W($"{ID} StopMove {this.Path.Count} pos:{(PosX,PosY)}");
+            SetMoveState(false);
             if ( this.doing.Count > 0)
             {
                 if(this.doing[0] is MoveTo)
@@ -360,7 +359,6 @@ namespace RpgMap
             Node start = new((int)pos.x, (int)pos.y);
             Node goal = new((int)x, (int)y);
             var path = MapPath.FindPath(map, start, goal);
-            //var path = MapJPS.JumpPointSearch(map, start, goal);
             if (path == null)
                 return false;
             SetMoveState(true);
@@ -396,7 +394,6 @@ namespace RpgMap
                         goal = new((int)TargetX, (int)TargetY);
 
                     var path2 = MapPath.FindPath(map, start, goal);
-                    //var path2 = MapJPS.JumpPointSearch(map, start, goal);
                     Log.W($"monster {ID} pause reFindPath start:{start.Show()} goal:{goal.Show()}, target{((int)TargetX, (int)TargetY)}, NewPos {((int)newX, (int)newY)}, {Path.Count}");
                     if (path2 == null || path2.Count <= 0)
                     {

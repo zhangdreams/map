@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace RpgMap
 {
     /// <summary>
-    /// 地图实例对象 
+    /// 地图实例对象
+    /// TODO 抽象出对象，减少下面代码中对于Type的判断
     /// </summary>
     internal class MapActor
     {
